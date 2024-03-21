@@ -139,8 +139,8 @@ def get_table_values(cr, table_name, value_mapping):
 
 
 if __name__ == '__main__':
-    db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
-    # db_path = "employee"
+    # db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
+    db_path = "employee"
     username = "SYSDBA"
     pwd = "4X2LVYh_VgXBbaR3"
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
