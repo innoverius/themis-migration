@@ -146,6 +146,7 @@ if __name__ == '__main__':
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
     con = connect_to_db(db_path, username, pwd)
     print_db_tables(con.cursor())
+    con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
     # cols = [str(col[0]) for col in table_cols]
