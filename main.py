@@ -1,8 +1,15 @@
-# import firebirdsql
+import os
+
+from flask import Flask, jsonify
 from firebird.driver import connect
-# import pandas as pd
-# import csv
-# from database_to_csv import create_csv_files
+
+
+app = Flask(__name__)
+
+
+@app.route("/test", methods=["GET", "POST"])
+def test_api():
+    return jsonify({"Test": "testing"})
 
 
 def connect_to_db(database, user, password):
@@ -143,10 +150,11 @@ if __name__ == '__main__':
     db_path = "employee"
     username = "SYSDBA"
     pwd = "4X2LVYh_VgXBbaR3"
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    con = connect_to_db(db_path, username, pwd)
-    print_db_tables(con.cursor())
-    con.close()
+    # con = connect_to_db(db_path, username, pwd)
+    # print_db_tables(con.cursor())
+    # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
     # cols = [str(col[0]) for col in table_cols]
