@@ -1,15 +1,5 @@
 import os
-
-from flask import Flask, jsonify
 from firebird.driver import connect
-
-
-app = Flask(__name__)
-
-
-@app.route("/test", methods=["GET", "POST"])
-def test_api():
-    return jsonify({"Test": "testing"})
 
 
 def connect_to_db(database, user, password):
@@ -146,15 +136,20 @@ def get_table_values(cr, table_name, value_mapping):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description="Migrate Themis data to Odoo")
+    parser.add_argument("-db", "--database", required=True, help="Path to the database")
+    parser.add_argument("-u", "--user", required=True, help="Username")
+    parser.add_argument("-p", "--password", required=True, help="Password")
+    args = parser.parse_args()
     # db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
-    db_path = "employee"
-    username = "SYSDBA"
-    pwd = "4X2LVYh_VgXBbaR3"
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    db_path = args.database
+    username = args.user
+    pwd = args.password
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    # con = connect_to_db(db_path, username, pwd)
-    # print_db_tables(con.cursor())
-    # con.close()
+    con = connect_to_db(db_path, username, pwd)
+    print_db_tables(con.cursor())
+    con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
     # cols = [str(col[0]) for col in table_cols]
