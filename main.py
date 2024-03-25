@@ -2,11 +2,9 @@ import os
 from firebird.driver import connect
 
 
-def connect_to_db(database, user, password):
+def connect_to_db(database):
     conn = connect(
         database=database,
-        user=user,
-        password=password,
         charset='ISO8859_1',
     )
     return conn
@@ -139,15 +137,11 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="Migrate Themis data to Odoo")
     parser.add_argument("-db", "--database", required=True, help="Path to the database")
-    parser.add_argument("-u", "--user", required=True, help="Username")
-    parser.add_argument("-p", "--password", required=True, help="Password")
     args = parser.parse_args()
     # db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
     db_path = args.database
-    username = args.user
-    pwd = args.password
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    con = connect_to_db(db_path, username, pwd)
+    con = connect_to_db(db_path)
     print_db_tables(con.cursor())
     con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
