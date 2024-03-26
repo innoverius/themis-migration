@@ -1,24 +1,8 @@
 import os
-from firebird.driver import connect
+import argparse
 
-
-def connect_to_db(database):
-    conn = connect(
-        database=database,
-        charset='ISO8859_1',
-    )
-    return conn
-
-
-# def connect_to_db_old(database, user, password):
-#     conn = firebirdsql.connect(
-#         host='localhost',
-#         database=database,
-#         user=user,
-#         password=password,
-#         charset='ISO8859_1',
-#     )
-#     return conn
+from themis_helper import connect_to_db, get_table_rows, get_table_values
+from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts
 
 
 def get_db_tables(cr):
@@ -43,14 +27,14 @@ def get_table_columns(cr, table_name):
     return cr.fetchall()
 
 
-def get_table_rows(cr, table_name, columns):
-    columns_string = ",".join(columns)
-    sql_string = f"""
-                select {columns_string}
-                from {table_name}
-                """
-    cr.execute(sql_string)
-    return cr.fetchall()
+# def get_table_rows(cr, table_name, columns):
+#     columns_string = ",".join(columns)
+#     sql_string = f"""
+#                 select {columns_string}
+#                 from {table_name}
+#                 """
+#     cr.execute(sql_string)
+#     return cr.fetchall()
 
 
 def print_db_tables(cr):
@@ -85,8 +69,8 @@ def print_table_info_for_id(cr, table_name, id_nr):
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
-    "ONDERNEMINGSNUMMER": "company_registry",
-    "BTWNUMMER": "vat",
+    "ONDERNEMINGSNUMMER": "company_id_number",
+    # "BTWNUMMER": "vat",
     "ADRES": "street",
     "POSTCODE": "zip",
     "GEMEENTE": "city",
@@ -99,28 +83,26 @@ company_value_mapping = {
 }
 
 
-company_comlumns = [
-    "ID",
-    "NAAM",
-    "ONDERNEMINGSNUMMER",
-    "BTWNUMMER",
-    "ADRES",
-    "POSTCODE",
-    "GEMEENTE",
-    "TELEFOON",
-    "MOBIEL",
-    "EMAIL",
-    "URL",
-    "VENNOOTSCHAPSNAAM",
-    "LANDCODE",
-]
+contact_value_mapping = {
+    "ID": "id",
+    # "BEDRIJF_ID": "parent_id",
+    # "NAAMVOORNAAM": "name",
+    # "ADRES": "street",
+    # "POSTCODE": "zip",
+    # "GEMEENTE": "city",
+    # "TELEFOON": "phone",
+    # "MOBIEL": "mobile",
+    "EMAIL": "email",
+    # "URL": "website",
+    # "LANDCODE": "country_code",
+}
 
 
-def get_table_values(cr, table_name, value_mapping):
-    columns = list(value_mapping.keys())
-    records = get_table_rows(cr, table_name, columns)
-    for r in records[:100]:
-        print(r)
+# def get_table_values(cr, table_name, value_mapping):
+#     columns = list(value_mapping.keys())
+#     records = get_table_rows(cr, table_name, columns)
+#     for r in records[:100]:
+#         print(r)
 
 
 # def create_table_csv(cr, table_name, filename, columns=None):
@@ -133,17 +115,33 @@ def get_table_values(cr, table_name, value_mapping):
 #         csv_out.writerows(get_table_rows(cr, table_name, columns))
 
 
-if __name__ == '__main__':
-    import argparse
+def parse_arguments():
     parser = argparse.ArgumentParser(description="Migrate Themis data to Odoo")
-    parser.add_argument("-db", "--database", required=True, help="Path to the database")
-    args = parser.parse_args()
+    parser.add_argument("-tdb", dest="themisdb", required=True, help="Path to the Themis database")
+    parser.add_argument("-url", dest="url", required=True, help="Url of the Odoo database")
+    parser.add_argument("-odb", dest="odoodb", required=True, help="Name of the Odoo database")
+    parser.add_argument("-u", dest="user", required=True, help="Odoo user name")
+    parser.add_argument("-s", dest="secret", required=True, help="Odoo user password or API key")
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
     # db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
-    db_path = args.database
+    args = parse_arguments()
+    themis_db = args.themisdb
+    # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
+    # models, uid = connect_to_odoo(args.url, args.odoodb, args.user, args.secret)
+    con = connect_to_db(themis_db)
+    # contacts = get_table_rows(con.cursor(), "ADRESBOEK", ["ID"])
+    # print(len(contacts))
+    company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
+    company_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
+    contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
+    contact_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    con = connect_to_db(db_path)
-    print_db_tables(con.cursor())
-    con.close()
+    # con = connect_to_db(db_path)
+    # print_db_tables(con.cursor())
+    # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
     # cols = [str(col[0]) for col in table_cols]
