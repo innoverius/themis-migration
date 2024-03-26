@@ -138,6 +138,7 @@ if __name__ == '__main__':
     company_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
     contact_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
+    con.close()
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
     # con = connect_to_db(db_path)
     # print_db_tables(con.cursor())
