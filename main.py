@@ -85,16 +85,16 @@ company_value_mapping = {
 
 contact_value_mapping = {
     "ID": "id",
-    # "BEDRIJF_ID": "parent_id",
-    # "NAAMVOORNAAM": "name",
-    # "ADRES": "street",
-    # "POSTCODE": "zip",
-    # "GEMEENTE": "city",
-    # "TELEFOON": "phone",
-    # "MOBIEL": "mobile",
+    "BEDRIJF_ID": "parent_id",
+    "NAAMVOORNAAM": "name",
+    "ADRES": "street",
+    "POSTCODE": "zip",
+    "GEMEENTE": "city",
+    "TELEFOON": "phone",
+    "MOBIEL": "mobile",
     "EMAIL": "email",
-    # "URL": "website",
-    # "LANDCODE": "country_code",
+    "URL": "website",
+    "LANDCODE": "country_code",
 }
 
 
@@ -135,8 +135,10 @@ if __name__ == '__main__':
     # contacts = get_table_rows(con.cursor(), "ADRESBOEK", ["ID"])
     # print(len(contacts))
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
+    # print(company_vals)
     company_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
+    # print(contact_vals)
     contact_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
     con.close()
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])

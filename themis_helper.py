@@ -5,7 +5,7 @@ from firebird.driver import connect
 def connect_to_db(database):
     conn = connect(
         database=database,
-        # charset='ISO8859_1',
+        charset='ISO8859_1',
     )
     return conn
 
@@ -51,7 +51,7 @@ def get_table_values(cr, table_name, value_mapping):
     keys = [value_mapping[col] for col in columns]
     res = []
     for row in rows:
-        # row = map(lambda x: str(x).encode("utf-8").decode("utf-8"), row)
+        # row = map(lambda x: bytes(str(x or ''), 'utf-8'), row)
         res.append(dict(zip(keys, row)))
     return res
 

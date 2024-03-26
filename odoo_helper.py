@@ -8,6 +8,12 @@ def connect_to_odoo(url, database, username, secret):
     return models, uid
 
 
+def convert_values_to_bytes(dic, keys):
+    for key in keys:
+        if key in dic:
+            dic[key] = bytes(str(dic[key] or ''), 'utf-8')
+
+
 def preprocess_company_values(company_vals):
     id_list = []
     for vals in company_vals:
@@ -33,6 +39,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
     id_list = []
     for vals in contact_vals:
         id_list.append(vals.pop("id"))
+        convert_values_to_bytes(contact_vals, ["email"])
         if "parent_id" in vals:
             vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
     return id_list
