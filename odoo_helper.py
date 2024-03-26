@@ -39,7 +39,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
     id_list = []
     for vals in contact_vals:
         id_list.append(vals.pop("id"))
-        convert_values_to_bytes(contact_vals, ["email"])
+        convert_values_to_bytes(vals, ["email"])
         if "parent_id" in vals:
             vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
     return id_list
