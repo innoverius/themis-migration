@@ -5,7 +5,7 @@ from firebird.driver import connect
 def connect_to_db(database):
     conn = connect(
         database=database,
-        charset='ISO8859_1',
+        # charset='ISO8859_1',
     )
     return conn
 
