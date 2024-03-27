@@ -1,8 +1,9 @@
+import csv
 import os
 import argparse
 
 from themis_helper import connect_to_db, get_table_rows, get_table_values
-from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts
+from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts, create_themis_cases, create_themis_parties, create_themis_documents
 
 
 def get_db_tables(cr):
@@ -60,10 +61,12 @@ def print_table_info_for_id(cr, table_name, id_nr):
                 """
     cr.execute(sql_string)
     record = cr.fetchall()[0]
-    print(columns_string)
-    print(record)
     for name, value in zip(columns, record):
         print(name + ": " + str(value))
+
+
+# CONTACT CATEGORY DOCUMENTATION
+# 2: Client
 
 
 company_value_mapping = {
@@ -98,6 +101,34 @@ contact_value_mapping = {
 }
 
 
+user_value_mapping = {
+    "ID": "id",
+}
+
+
+case_value_mapping = {
+    "ID": "id",
+    "OMSCHRIJVING": "name",
+    "NUMMER": "reference_number",
+    "GEARCHIVEERD": "archived",
+}
+
+
+party_value_mapping = {
+    "DOSSIER_ID": "case_id",
+    "ADRESBOEK_ID": "contact_id",
+    "BEDRIJF_ID": "company_id",
+}
+
+document_value_mapping = {
+    "LINKEDTO_ID": "case_id",
+    "OMSCHRIJVING": "name",
+    "BESTAND": "filename",
+    # "AANMAKER_ID": "create_uid",
+    # "AANMAAKDATUM": "create_date",
+}
+
+
 # def get_table_values(cr, table_name, value_mapping):
 #     columns = list(value_mapping.keys())
 #     records = get_table_rows(cr, table_name, columns)
@@ -105,19 +136,20 @@ contact_value_mapping = {
 #         print(r)
 
 
-# def create_table_csv(cr, table_name, filename, columns=None):
-#     if not columns:
-#         table_cols = get_table_columns(cr, table_name)
-#         columns = [str(col[0]) for col in table_cols]
-#     with open(filename, "w") as out:
-#         csv_out = csv.writer(out)
-#         csv_out.writerow(columns)
-#         csv_out.writerows(get_table_rows(cr, table_name, columns))
+def create_table_csv(cr, table_name, filename, columns=None):
+    if not columns:
+        table_cols = get_table_columns(cr, table_name)
+        columns = [str(col[0]) for col in table_cols]
+    with open(filename, "w") as out:
+        csv_out = csv.writer(out)
+        csv_out.writerow(columns)
+        csv_out.writerows(get_table_rows(cr, table_name, columns))
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Migrate Themis data to Odoo")
     parser.add_argument("-tdb", dest="themisdb", required=True, help="Path to the Themis database")
+    parser.add_argument("-tdf", dest="documentpath", required=True, help="Path to the Themis documents folder")
     parser.add_argument("-url", dest="url", required=True, help="Url of the Odoo database")
     parser.add_argument("-odb", dest="odoodb", required=True, help="Name of the Odoo database")
     parser.add_argument("-u", dest="user", required=True, help="Odoo user name")
@@ -126,24 +158,29 @@ def parse_arguments():
 
 
 if __name__ == '__main__':
-    # db_path = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
     args = parse_arguments()
     themis_db = args.themisdb
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
-    # models, uid = connect_to_odoo(args.url, args.odoodb, args.user, args.secret)
+
     con = connect_to_db(themis_db)
-    # contacts = get_table_rows(con.cursor(), "ADRESBOEK", ["ID"])
-    # print(len(contacts))
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
-    # print(company_vals)
     company_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
-    # print(contact_vals)
     contact_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
+    case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
+    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals)
+    party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
+    create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping)
+    document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
+    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping)
     con.close()
+
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    # con = connect_to_db(db_path)
+    # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
+    # print_table_columns(con.cursor(), "DOSSIERDOCUMENT")
+    # print_table_info_for_id(con.cursor(), "GEBRUIKER", 3)
+    # create_table_csv(con.cursor(), "DOSSIERDOCUMENT", "DOCUMENT.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
