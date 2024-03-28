@@ -72,7 +72,7 @@ def print_table_info_for_id(cr, table_name, id_nr):
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
-    "ONDERNEMINGSNUMMER": "company_id_number",
+    # "ONDERNEMINGSNUMMER": "company_id_number",
     # "BTWNUMMER": "vat",
     "ADRES": "street",
     "POSTCODE": "zip",
