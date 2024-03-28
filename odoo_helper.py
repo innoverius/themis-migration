@@ -94,6 +94,7 @@ def create_themis_parties(url, database, username, secret, party_vals, company_i
     models, uid = connect_to_odoo(url, database, username, secret)
     preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.party", "create", [party_vals])
+    print(len(response))
     return response
 
 
@@ -102,7 +103,7 @@ def preprocess_document_values(document_vals, document_path, case_id_mapping):
         if "case_id" in vals:
             dir_nb = vals["case_id"]
             with open(os.path.join(document_path, str(dir_nb) + "/" + vals["filename"]), "rb") as data:
-                datas = base64.b64encode(data.read())
+                datas = base64.b64encode(data.read()).decode("utf-8")
                 vals["datas"] = datas
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
 
@@ -111,4 +112,5 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     models, uid = connect_to_odoo(url, database, username, secret)
     preprocess_document_values(document_vals, document_path, case_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.document", "create", [document_vals])
+    print(len(response))
     return response
