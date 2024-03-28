@@ -100,10 +100,19 @@ def create_themis_parties(url, database, username, secret, party_vals, company_i
 def preprocess_document_values(vals, document_path, case_id_mapping):
     if "case_id" in vals:
         dir_nb = vals["case_id"]
-        with open(os.path.join(document_path, str(dir_nb) + "/" + vals["filename"]), "rb") as data:
-            datas = base64.b64encode(data.read()).decode("utf-8")
+        filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
+        try:
+            with open(filepath, "rb") as data:
+                datas = base64.b64encode(data.read()).decode("utf-8")
+        except FileNotFoundError:
+            print("File at " + str(filepath) + " not found.")
+            return False
+        else:
             vals["datas"] = datas
-        vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
+            vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
+            return True
+    else:
+        return False
 
 
 def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping):
@@ -113,13 +122,16 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
-        preprocess_document_values(vals, document_path, case_id_mapping)
-        data_size = sys.getsizeof(vals["datas"])
-        if temp_size + data_size < max_size:
-            temp_vals.append(vals)
-            temp_size += data_size
-        else:
-            response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
-            temp_vals = [vals]
-            temp_size = data_size
-            print(len(response))
+        if preprocess_document_values(vals, document_path, case_id_mapping):
+            data_size = sys.getsizeof(vals["datas"])
+            if temp_size + data_size < max_size:
+                temp_vals.append(vals)
+                temp_size += data_size
+            else:
+                response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
+                temp_vals = [vals]
+                temp_size = data_size
+                print(len(response))
+    if temp_vals:
+        response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
+        print(len(response))
