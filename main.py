@@ -173,8 +173,6 @@ if __name__ == '__main__':
     create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping)
     document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
-    # TODO test filter to reduce number of documents migrated
-    document_vals = list(filter(lambda x: x["case_id"] == 167, document_vals))
     create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping)
     con.close()
 
