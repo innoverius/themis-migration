@@ -3,7 +3,7 @@ import os
 import argparse
 
 from themis_helper import connect_to_db, get_table_rows, get_table_values
-from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts, create_themis_cases, create_themis_parties, create_themis_documents
+from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts, create_themis_cases, create_themis_parties, create_themis_documents, create_themis_partner_categories, create_themis_case_categories
 
 
 def get_db_tables(cr):
@@ -65,8 +65,10 @@ def print_table_info_for_id(cr, table_name, id_nr):
         print(name + ": " + str(value))
 
 
-# CONTACT CATEGORY DOCUMENTATION
-# 2: Client
+partner_category_value_mapping = {
+    "ID": "id",
+    "OMSCHRIJVING": "name",
+}
 
 
 company_value_mapping = {
@@ -83,6 +85,7 @@ company_value_mapping = {
     "URL": "website",
     "VENNOOTSCHAPSNAAM": "company_name",
     "LANDCODE": "country_code",
+    "ADRESCATEGORIE_ID": "category_id",
 }
 
 
@@ -98,6 +101,7 @@ contact_value_mapping = {
     "EMAIL": "email",
     "URL": "website",
     "LANDCODE": "country_code",
+    "ADRESCATEGORIE_ID": "category_id",
 }
 
 
@@ -106,10 +110,17 @@ user_value_mapping = {
 }
 
 
+case_category_value_mapping = {
+    "ID": "id",
+    "NEDERLANDS": "name",
+}
+
+
 case_value_mapping = {
     "ID": "id",
     "OMSCHRIJVING": "name",
     "NUMMER": "reference_number",
+    "DOSSIERCATEGORIE_ID": "category_id",
     "GEARCHIVEERD": "archived",
 }
 
@@ -163,14 +174,18 @@ if __name__ == '__main__':
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
 
     con = connect_to_db(themis_db)
+    partner_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", partner_category_value_mapping)
+    partner_category_id_mapping, party_category_id_mapping = create_themis_partner_categories(args.url, args.odoodb, args.user, args.secret, partner_category_vals)
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
-    company_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
+    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, partner_category_id_mapping)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
-    contact_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
+    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, partner_category_id_mapping)
+    case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
+    case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
-    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals)
+    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, case_category_id_mapping)
     party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
-    create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping)
+    create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
     document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
     create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping)
@@ -180,8 +195,9 @@ if __name__ == '__main__':
     # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOSSIERDOCUMENT")
-    # print_table_info_for_id(con.cursor(), "GEBRUIKER", 3)
-    # create_table_csv(con.cursor(), "DOSSIERDOCUMENT", "DOCUMENT.csv")
+    # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 3409)
+    # create_table_csv(con.cursor(), "ADRESCATEGORIE", "ADRESCATEGORIE.csv")
+    # create_table_csv(con.cursor(), "DOSSIERCATEGORIE", "DOSSIERCATEGORIE.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
