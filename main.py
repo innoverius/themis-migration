@@ -128,6 +128,7 @@ case_value_mapping = {
 party_value_mapping = {
     "DOSSIER_ID": "case_id",
     "ADRESBOEK_ID": "contact_id",
+    "DOSSIERADRESCATEGORIE_ID": "category_id",
     "BEDRIJF_ID": "company_id",
 }
 

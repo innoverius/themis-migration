@@ -140,6 +140,9 @@ def preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, 
         else:
             partner_id = False
             category_id = False
+        party_category_id = vals.pop("category_id")
+        if party_category_id:
+            category_id = party_category_id_mapping.get(party_category_id, False)
         vals["partner_id"] = partner_id
         vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
         vals["party_category_ids"] = category_id and [(6, 0, [category_id])]
