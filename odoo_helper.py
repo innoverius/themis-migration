@@ -163,7 +163,26 @@ def create_themis_parties(url, database, username, secret, party_vals, company_i
     return response
 
 
-def preprocess_document_values(vals, document_path, case_id_mapping):
+def preprocess_document_category_values(document_category_vals):
+    id_list = []
+    for vals in document_category_vals:
+        id_list.append(vals.pop("id"))
+    return id_list
+
+
+def create_themis_document_categories(url, database, username, secret, document_category_vals):
+    models, uid = connect_to_odoo(url, database, username, secret)
+    id_list = preprocess_document_category_values(document_category_vals)
+    response = models.execute_kw(database, uid, secret, "cases.document_category", "create", [document_category_vals])
+    if len(id_list) == len(response):
+        print(len(id_list))
+        id_mapping = dict(zip(id_list, response))
+        return id_mapping
+    else:
+        return {}
+
+
+def preprocess_document_values(vals, document_path, case_id_mapping, document_category_id_mapping):
     if "case_id" in vals:
         dir_nb = vals["case_id"]
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
@@ -176,19 +195,21 @@ def preprocess_document_values(vals, document_path, case_id_mapping):
         else:
             vals["datas"] = datas
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
+            categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
+            vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
             return True
     else:
         return False
 
 
-def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping):
+def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, document_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
     max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
-        if preprocess_document_values(vals, document_path, case_id_mapping):
+        if preprocess_document_values(vals, document_path, case_id_mapping, document_category_id_mapping):
             data_size = sys.getsizeof(vals["datas"])
             if temp_size + data_size < max_size:
                 temp_vals.append(vals)

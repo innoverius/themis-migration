@@ -3,7 +3,7 @@ import os
 import argparse
 
 from themis_helper import connect_to_db, get_table_rows, get_table_values
-from odoo_helper import connect_to_odoo, create_themis_companies, create_themis_contacts, create_themis_cases, create_themis_parties, create_themis_documents, create_themis_partner_categories, create_themis_case_categories
+from odoo_helper import *
 
 
 def get_db_tables(cr):
@@ -131,10 +131,16 @@ party_value_mapping = {
     "BEDRIJF_ID": "company_id",
 }
 
+document_category_value_mapping = {
+    "ID": "id",
+    "OMSCHRIJVING": "name",
+}
+
 document_value_mapping = {
     "LINKEDTO_ID": "case_id",
     "OMSCHRIJVING": "name",
     "BESTAND": "filename",
+    "DOCUMENTMAP_ID": "category_id",
     # "AANMAKER_ID": "create_uid",
     # "AANMAAKDATUM": "create_date",
 }
@@ -186,16 +192,18 @@ if __name__ == '__main__':
     case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, case_category_id_mapping)
     party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
     create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
+    document_category_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENTMAP", document_category_value_mapping)
+    document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
     document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
-    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping)
+    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, document_category_id_mapping)
     con.close()
 
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
     # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
-    # print_table_columns(con.cursor(), "DOSSIERDOCUMENT")
-    # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 3409)
+    # print_table_columns(con.cursor(), "DOCUMENTTYPE")
+    # print_table_info_for_id(con.cursor(), "DOSSIERDOCUMENTMAP", 4)
     # create_table_csv(con.cursor(), "ADRESCATEGORIE", "ADRESCATEGORIE.csv")
     # create_table_csv(con.cursor(), "DOSSIERCATEGORIE", "DOSSIERCATEGORIE.csv")
     # con.close()
