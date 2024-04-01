@@ -17,48 +17,40 @@ def convert_values_to_bytes(dic, keys):
             dic[key] = bytes(str(dic[key] or ''), 'utf-8')
 
 
-def preprocess_partner_category_values(partner_category_vals):
+def preprocess_party_category_values(party_category_vals):
     id_list = []
-    for vals in partner_category_vals:
+    for vals in party_category_vals:
         id_list.append(vals.pop("id"))
     return id_list
 
 
-def create_themis_partner_categories(url, database, username, secret, partner_category_vals):
+def create_themis_party_categories(url, database, username, secret, party_category_vals):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list = preprocess_partner_category_values(partner_category_vals)
-    partner_category_response = models.execute_kw(database, uid, secret, "res.partner.category", "create", [partner_category_vals])
-    party_category_response = models.execute_kw(database, uid, secret, "cases.party_category", "create", [partner_category_vals])
-    if len(id_list) == len(partner_category_response):
-        print(len(id_list))
-        partner_category_id_mapping = dict(zip(id_list, partner_category_response))
-    else:
-        partner_category_id_mapping = {}
+    id_list = preprocess_party_category_values(party_category_vals)
+    party_category_response = models.execute_kw(database, uid, secret, "cases.party_category", "create", [party_category_vals])
     if len(id_list) == len(party_category_response):
         print(len(id_list))
         party_category_id_mapping = dict(zip(id_list, party_category_response))
     else:
         party_category_id_mapping = {}
-    return partner_category_id_mapping, party_category_id_mapping
+    return party_category_id_mapping
 
 
-def preprocess_company_values(company_vals, partner_category_id_mapping):
+def preprocess_company_values(company_vals):
     id_list = []
     category_id_list = []
     for vals in company_vals:
         id_list.append(vals.pop("id"))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
-        categ_id = partner_category_id_mapping.get(themis_category_id, False)
-        vals["category_id"] = categ_id and [(6, 0, [categ_id])]
         if "is_company" not in vals:
             vals["is_company"] = True
     return id_list, category_id_list
 
 
-def create_themis_companies(url, database, username, secret, company_vals, partner_category_id_mapping):
+def create_themis_companies(url, database, username, secret, company_vals):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_company_values(company_vals, partner_category_id_mapping)
+    id_list, category_id_list = preprocess_company_values(company_vals)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create", [company_vals])
     print(len(response))
@@ -66,7 +58,7 @@ def create_themis_companies(url, database, username, secret, company_vals, partn
     return id_mapping, category_id_mapping
 
 
-def preprocess_contact_values(contact_vals, company_id_mapping, partner_category_id_mapping):
+def preprocess_contact_values(contact_vals, company_id_mapping):
     id_list = []
     category_id_list = []
     for vals in contact_vals:
@@ -76,14 +68,12 @@ def preprocess_contact_values(contact_vals, company_id_mapping, partner_category
             vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
-        categ_id = partner_category_id_mapping.get(themis_category_id, False)
-        vals["category_id"] = categ_id and [(6, 0, [categ_id])]
     return id_list, category_id_list
 
 
-def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, partner_category_id_mapping):
+def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_contact_values(contact_vals, company_id_mapping, partner_category_id_mapping)
+    id_list, category_id_list = preprocess_contact_values(contact_vals, company_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create", [contact_vals])
     print(len(response))
