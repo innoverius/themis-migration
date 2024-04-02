@@ -49,6 +49,8 @@ def preprocess_company_values(company_vals):
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
             vals["is_company"] = True
+        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
+        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
     return id_list, category_id_list
 
 
@@ -85,6 +87,8 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
         vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
+        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
+        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
     return id_list, category_id_list
 
 
@@ -125,6 +129,8 @@ def preprocess_case_values(case_vals, case_category_id_mapping):
             vals["active"] = vals.pop("archived") == "F"
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
         vals["case_category_ids"] = categ_id and [(6, 0, [categ_id])]
+        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
+        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
     return id_list
 
 
@@ -207,6 +213,8 @@ def preprocess_document_values(vals, document_path, case_id_mapping, document_ca
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
+            vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
+            vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
             return True
     else:
         return False

@@ -80,9 +80,9 @@ company_value_mapping = {
     "LANDCODE": "country_code",
     "ADRESCATEGORIE_ID": "category_id",
     "OPMERKING": "comment",
-    # "CREATED": "create_date",
+    "CREATED": "create_date",
     # "CREATEDBY_ID": "create_uid",
-    # "MODIFIED": "write_date",
+    "MODIFIED": "write_date",
 }
 
 # TODO aanspreking en dergelijke
@@ -110,9 +110,9 @@ contact_value_mapping = {
     "URL": "website",
     "ADRESCATEGORIE_ID": "category_id",
     "OPMERKING": "comment",
-    # "CREATED": "create_date",
+    "CREATED": "create_date",
     # "CREATEDBY_ID": "create_uid",
-    # "MODIFIED": "write_date",
+    "MODIFIED": "write_date",
 }
 
 user_value_mapping = {
@@ -130,8 +130,8 @@ case_value_mapping = {
     "NUMMER": "reference_number",
     "DOSSIERCATEGORIE_ID": "category_id",
     "GEARCHIVEERD": "archived",
-    # "OPENINGSDATUM": "create_date",
-    # "MODIFIED": "write_date",
+    "OPENINGSDATUM": "create_date",
+    "MODIFIED": "write_date",
 }
 
 party_value_mapping = {
@@ -152,8 +152,8 @@ document_value_mapping = {
     "BESTAND": "filename",
     "DOCUMENTMAP_ID": "category_id",
     # "AANMAKER_ID": "create_uid",
-    # "AANMAAKDATUM": "create_date",
-    # "AANPASDATUM": "write_date",
+    "AANMAAKDATUM": "create_date",
+    "AANPASDATUM": "write_date",
 }
 
 # TODO migrate case descriptions
