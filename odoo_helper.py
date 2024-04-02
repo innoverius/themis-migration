@@ -78,7 +78,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
         vals["be_gender"] = vals.pop("gender")
         # dateofbirth = vals.pop("dateofbirth")
         # vals["be_dateofbirth"] = dateofbirth and datetime.strptime(dateofbirth, themis_datetime_format)
-        vals["be_dateofbirth"] = vals.pop("dateofbirth")
+        vals["be_dateofbirth"] = vals.pop("dateofbirth").isoformat()
         vals["be_placeofbirth"] = vals.pop("placeofbirth")
         vals["be_nationality"] = vals.pop("nationality")
         vals["be_national_number"] = vals.pop("national_number")
