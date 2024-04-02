@@ -15,6 +15,15 @@ def connect_to_odoo(url, database, username, secret):
     return models, uid
 
 
+def get_country_code_id_mapping(url, database, username, secret):
+    models, uid = connect_to_odoo(url, database, username, secret)
+    response = models.execute_kw(database, uid, secret, 'res.country', 'search_read', [[]], {'fields': ['code', 'id']})
+    code_id_mapping = {}
+    for vals in response:
+        code_id_mapping[vals["code"]] = vals["id"]
+    return code_id_mapping
+
+
 def convert_values_to_bytes(dic, keys):
     for key in keys:
         if key in dic:
@@ -40,11 +49,15 @@ def create_themis_party_categories(url, database, username, secret, party_catego
     return party_category_id_mapping
 
 
-def preprocess_company_values(company_vals):
+def preprocess_company_values(company_vals, country_code_id_mapping):
     id_list = []
     category_id_list = []
     for vals in company_vals:
         id_list.append(vals.pop("id"))
+        country_code = vals.pop("country_code")
+        vals["country_id"] = country_code_id_mapping.get(country_code, False)
+        if vals["vat"] and vals["vat"][0].isdigit() and country_code:
+            vals["vat"] = country_code + vals["vat"]
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
@@ -54,22 +67,23 @@ def preprocess_company_values(company_vals):
     return id_list, category_id_list
 
 
-def create_themis_companies(url, database, username, secret, company_vals):
+def create_themis_companies(url, database, username, secret, company_vals, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_company_values(company_vals)
+    id_list, category_id_list = preprocess_company_values(company_vals, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
-    response = models.execute_kw(database, uid, secret, "res.partner", "create", [company_vals])
+    response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
     return id_mapping, category_id_mapping
 
 
-def preprocess_contact_values(contact_vals, company_id_mapping):
+def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping):
     id_list = []
     category_id_list = []
     for vals in contact_vals:
         id_list.append(vals.pop("id"))
         convert_values_to_bytes(vals, ["email"])
+        vals["country_id"] = country_code_id_mapping.get(vals.pop("country_code"), False)
         manualzip = vals.pop("manualzip")
         vals["zip"] = vals["zip"] or manualzip
         vals["be_zip"] = vals["zip"]
@@ -92,9 +106,9 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
     return id_list, category_id_list
 
 
-def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping):
+def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_contact_values(contact_vals, company_id_mapping)
+    id_list, category_id_list = preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create", [contact_vals])
     print(len(response))

@@ -60,15 +60,14 @@ party_category_value_mapping = {
     "OMSCHRIJVING": "name",
 }
 
-# TODO opmerkingen/notes migreren
 # TODO country code naar country id omvormen in Odoo
 # TODO BTW nummer migreren
 # TODO financieel/bankrekeningen migreren
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
-    # "ONDERNEMINGSNUMMER": "company_id_number",
-    # "BTWNUMMER": "vat",
+    "ONDERNEMINGSNUMMER": "company_id_number",
+    "BTWNUMMER": "vat",
     "ADRES": "street",
     "POSTCODE": "zip",
     "GEMEENTE": "city",
@@ -94,7 +93,7 @@ contact_value_mapping = {
     "POSTCODE": "zip",
     "MANUALZIP": "manualzip",
     "GEMEENTE": "city",
-    # "LANDCODE": "country_code",  # TODO convert in Odoo
+    "LANDCODE": "country_code",  # TODO convert in Odoo
     "TELEFOON": "phone",
     "MOBIEL": "mobile",
     "EMAIL": "email",
@@ -202,10 +201,11 @@ if __name__ == '__main__':
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
 
     con = connect_to_db(themis_db)
+    country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
-    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals)
+    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, country_code_id_mapping)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
-    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping)
+    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, country_code_id_mapping)
     case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
