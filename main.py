@@ -28,16 +28,6 @@ def get_table_columns(cr, table_name):
     return cr.fetchall()
 
 
-# def get_table_rows(cr, table_name, columns):
-#     columns_string = ",".join(columns)
-#     sql_string = f"""
-#                 select {columns_string}
-#                 from {table_name}
-#                 """
-#     cr.execute(sql_string)
-#     return cr.fetchall()
-
-
 def print_db_tables(cr):
     db_tables = get_db_tables(cr)
     for db_table in db_tables:
@@ -70,7 +60,10 @@ party_category_value_mapping = {
     "OMSCHRIJVING": "name",
 }
 
-
+# TODO opmerkingen/notes migreren
+# TODO country code naar country id omvormen in Odoo
+# TODO BTW nummer migreren
+# TODO financieel/bankrekeningen migreren
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
@@ -86,35 +79,50 @@ company_value_mapping = {
     "VENNOOTSCHAPSNAAM": "company_name",
     "LANDCODE": "country_code",
     "ADRESCATEGORIE_ID": "category_id",
+    "OPMERKING": "comment",
+    # "CREATED": "create_date",
+    # "CREATEDBY_ID": "create_uid",
+    # "MODIFIED": "write_date",
 }
 
-
+# TODO aanspreking en dergelijke
 contact_value_mapping = {
     "ID": "id",
     "BEDRIJF_ID": "parent_id",
     "NAAMVOORNAAM": "name",
     "ADRES": "street",
     "POSTCODE": "zip",
+    "MANUALZIP": "manualzip",
     "GEMEENTE": "city",
+    # "LANDCODE": "country_code",  # TODO convert in Odoo
     "TELEFOON": "phone",
     "MOBIEL": "mobile",
     "EMAIL": "email",
+    "BEROEP": "function",
+    "NAAM": "lastname",
+    "VOORNAAM": "firstname",
+    "GESLACHT": "gender",
+    "GEBOORTEDATUM": "dateofbirth",
+    "GEBOORTEPLAATS": "placeofbirth",
+    "NATIONALITEIT": "nationality",
+    "INSZ": "national_number",
+    # "TAALCODE": "language",  # TODO convert in Odoo
     "URL": "website",
-    "LANDCODE": "country_code",
     "ADRESCATEGORIE_ID": "category_id",
+    "OPMERKING": "comment",
+    # "CREATED": "create_date",
+    # "CREATEDBY_ID": "create_uid",
+    # "MODIFIED": "write_date",
 }
-
 
 user_value_mapping = {
     "ID": "id",
 }
 
-
 case_category_value_mapping = {
     "ID": "id",
     "NEDERLANDS": "name",
 }
-
 
 case_value_mapping = {
     "ID": "id",
@@ -122,8 +130,9 @@ case_value_mapping = {
     "NUMMER": "reference_number",
     "DOSSIERCATEGORIE_ID": "category_id",
     "GEARCHIVEERD": "archived",
+    # "OPENINGSDATUM": "create_date",
+    # "MODIFIED": "write_date",
 }
-
 
 party_value_mapping = {
     "DOSSIER_ID": "case_id",
@@ -144,8 +153,20 @@ document_value_mapping = {
     "DOCUMENTMAP_ID": "category_id",
     # "AANMAKER_ID": "create_uid",
     # "AANMAAKDATUM": "create_date",
+    # "AANPASDATUM": "write_date",
 }
 
+# TODO migrate case descriptions
+case_description_type_value_mapping = {
+    "ID": "id",
+    "N": "name",
+}
+
+case_description_value_mapping = {
+    "DOSSIER_ID": "case_id",
+    "OPMERKINGTYPE_ID": "type_id",
+    "OPMERKING": "description",
+}
 
 # def get_table_values(cr, table_name, value_mapping):
 #     columns = list(value_mapping.keys())
@@ -204,9 +225,8 @@ if __name__ == '__main__':
     # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
-    # print_table_info_for_id(con.cursor(), "DOSSIERDOCUMENTMAP", 4)
-    # create_table_csv(con.cursor(), "ADRESCATEGORIE", "ADRESCATEGORIE.csv")
-    # create_table_csv(con.cursor(), "DOSSIERCATEGORIE", "DOSSIERCATEGORIE.csv")
+    # print_table_info_for_id(con.cursor(), "DOSSIERDOCUMENT", 200)
+    # create_table_csv(con.cursor(), "OPMERKINGTYPE", "OPMERKINGTYPE.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)

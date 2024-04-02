@@ -2,6 +2,10 @@ import os
 import sys
 import base64
 import xmlrpc.client
+from datetime import datetime
+
+
+themis_datetime_format = "%Y-%m-%d %H:%M:%S"
 
 
 def connect_to_odoo(url, database, username, secret):
@@ -64,8 +68,20 @@ def preprocess_contact_values(contact_vals, company_id_mapping):
     for vals in contact_vals:
         id_list.append(vals.pop("id"))
         convert_values_to_bytes(vals, ["email"])
-        if "parent_id" in vals:
-            vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
+        manualzip = vals.pop("manualzip")
+        vals["zip"] = vals["zip"] or manualzip
+        vals["be_zip"] = vals["zip"]
+        vals["be_streetandnumber"] = vals["street"]
+        vals["be_municipality"] = vals["city"]
+        vals["be_lastname"] = vals.pop("lastname")
+        vals["be_firstname"] = vals.pop("firstname")
+        vals["be_gender"] = vals.pop("gender")
+        dateofbirth = vals.pop("dateofbirth")
+        vals["be_dateofbirth"] = dateofbirth and datetime.strptime(dateofbirth, themis_datetime_format)
+        vals["be_placeofbirth"] = vals.pop("placeofbirth")
+        vals["be_nationality"] = vals.pop("nationality")
+        vals["be_national_number"] = vals.pop("national_number")
+        vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
     return id_list, category_id_list
