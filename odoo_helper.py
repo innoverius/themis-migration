@@ -54,11 +54,7 @@ def preprocess_company_values(company_vals, country_code_id_mapping):
     category_id_list = []
     for vals in company_vals:
         id_list.append(vals.pop("id"))
-        if vals["comment"]:
-            print(vals["comment"])
         vals["comment"] = vals["comment"] and vals["comment"].replace("\n", "<br>\n")
-        if vals["comment"]:
-            print(vals["comment"])
         country_code = vals.pop("country_code")
         vals["country_id"] = country_code_id_mapping.get(country_code, False)
         if vals["vat"] and vals["vat"][0].isdigit() and country_code:
@@ -88,7 +84,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_
     category_id_list = []
     for vals in contact_vals:
         id_list.append(vals.pop("id"))
-        convert_values_to_bytes(vals, ["email", "comment"])
+        vals["comment"] = vals["comment"] and vals["comment"].replace("\n", "<br>\n")
         vals["country_id"] = country_code_id_mapping.get(vals.pop("country_code"), False)
         manualzip = vals.pop("manualzip")
         vals["zip"] = vals["zip"] or manualzip
@@ -109,6 +105,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_
         category_id_list.append(themis_category_id)
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
+        convert_values_to_bytes(vals, ["email", "comment"])
     return id_list, category_id_list
 
 
