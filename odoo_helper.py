@@ -52,8 +52,16 @@ def create_themis_party_categories(url, database, username, secret, party_catego
 def preprocess_company_values(company_vals, country_code_id_mapping):
     id_list = []
     category_id_list = []
+    company_bank_vals = []
     for vals in company_vals:
-        id_list.append(vals.pop("id"))
+        company_id = vals.pop("id")
+        id_list.append(company_id)
+        bank_number = vals.pop("bank_number")
+        if bank_number:
+            company_bank_vals.append({
+                "acc_number": bank_number,
+                "partner_id": company_id,
+            })
         vals["comment"] = vals["comment"] and vals["comment"].replace("\n", "<br>\n")
         country_code = vals.pop("country_code")
         vals["country_id"] = country_code_id_mapping.get(country_code, False)
@@ -66,24 +74,35 @@ def preprocess_company_values(company_vals, country_code_id_mapping):
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
-    return id_list, category_id_list
+    return id_list, category_id_list, company_bank_vals
 
 
 def create_themis_companies(url, database, username, secret, company_vals, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_company_values(company_vals, country_code_id_mapping)
+    id_list, category_id_list, bank_vals = preprocess_company_values(company_vals, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
+    for vals in bank_vals:
+        vals["partner_id"] = id_mapping[vals["partner_id"]]
+    models.execute_kw(database, uid, secret, "res.partner.bank", "create", [bank_vals])
     return id_mapping, category_id_mapping
 
 
 def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping):
     id_list = []
     category_id_list = []
+    contact_bank_vals = []
     for vals in contact_vals:
-        id_list.append(vals.pop("id"))
+        contact_id = vals.pop("id")
+        id_list.append(contact_id)
+        bank_number = vals.pop("bank_number")
+        if bank_number:
+            contact_bank_vals.append({
+                "acc_number": bank_number,
+                "partner_id": contact_id,
+            })
         vals["comment"] = vals["comment"] and vals["comment"].replace("\n", "<br>\n")
         vals["country_id"] = country_code_id_mapping.get(vals.pop("country_code"), False)
         manualzip = vals.pop("manualzip")
@@ -106,16 +125,19 @@ def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
-    return id_list, category_id_list
+    return id_list, category_id_list, contact_bank_vals
 
 
 def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list = preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping)
+    id_list, category_id_list, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create", [contact_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
+    for vals in bank_vals:
+        vals["partner_id"] = id_mapping[vals["partner_id"]]
+    models.execute_kw(database, uid, secret, "res.partner.bank", "create", [bank_vals])
     return id_mapping, category_id_mapping
 
 
