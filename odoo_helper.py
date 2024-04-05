@@ -12,7 +12,7 @@ language_mapping = {
     "N": "nl_BE",
     "F": "fr_BE",
     "E": "en_GB",
-    "D": "de",
+    "D": "de_DE",
 }
 
 
