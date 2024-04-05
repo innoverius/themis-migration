@@ -148,7 +148,7 @@ def create_themis_contacts(url, database, username, secret, contact_vals, compan
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, category_id_list, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
-    response = models.execute_kw(database, uid, secret, "res.partner", "create", [contact_vals])
+    response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [contact_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
