@@ -75,6 +75,7 @@ company_value_mapping = {
     "TELEFOON": "phone",
     "MOBIEL": "mobile",
     "EMAIL": "email",
+    "TAALCODE": "language",
     "URL": "website",
     "VENNOOTSCHAPSNAAM": "company_name",
     "LANDCODE": "country_code",
@@ -107,7 +108,7 @@ contact_value_mapping = {
     "GEBOORTEPLAATS": "placeofbirth",
     "NATIONALITEIT": "nationality",
     "INSZ": "national_number",
-    # "TAALCODE": "language",  # TODO convert in Odoo
+    "TAALCODE": "language",
     "URL": "website",
     "ADRESCATEGORIE_ID": "category_id",
     "OPMERKING": "comment",
@@ -228,7 +229,7 @@ if __name__ == '__main__':
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
     # print_table_info_for_id(con.cursor(), "DOSSIERDOCUMENT", 200)
-    # create_table_csv(con.cursor(), "OPMERKINGTYPE", "OPMERKINGTYPE.csv")
+    # create_table_csv(con.cursor(), "TAALTABEL", "TAALTABEL.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)

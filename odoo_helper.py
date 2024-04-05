@@ -8,6 +8,14 @@ from datetime import datetime
 themis_datetime_format = "%Y-%m-%d %H:%M:%S"
 
 
+language_mapping = {
+    "N": "nl_BE",
+    "F": "fr_BE",
+    "E": "en_GB",
+    "D": "de",
+}
+
+
 def connect_to_odoo(url, database, username, secret):
     common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(url))
     uid = common.authenticate(database, username, secret, {})
@@ -67,6 +75,10 @@ def preprocess_company_values(company_vals, country_code_id_mapping):
         vals["country_id"] = country_code_id_mapping.get(country_code, False)
         if vals["vat"] and vals["vat"][0].isdigit() and country_code:
             vals["vat"] = country_code + vals["vat"]
+        if vals["language"] and vals["language"] in language_mapping:
+            vals["language"] = language_mapping[vals["language"]]
+        elif vals["language"]:
+            print("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
@@ -120,6 +132,10 @@ def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_
         vals["be_nationality"] = vals.pop("nationality")
         vals["be_national_number"] = vals.pop("national_number")
         vals["parent_id"] = company_id_mapping.get(vals["parent_id"], False)
+        if vals["language"] and vals["language"] in language_mapping:
+            vals["language"] = language_mapping[vals["language"]]
+        elif vals["language"]:
+            print("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
