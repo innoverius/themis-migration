@@ -55,14 +55,20 @@ def print_table_info_for_id(cr, table_name, id_nr):
         print(name + ": " + str(value))
 
 
+user_value_mapping = {
+    "ID": "id",
+    "NAAM": "name",
+    "TEL_MOBIEL": "mobile",
+    "EMAILADRES": "email",
+    "ACTIEF": "active",
+}
+
 party_category_value_mapping = {
     "ID": "id",
     "OMSCHRIJVING": "name",
 }
 
-# TODO country code naar country id omvormen in Odoo
 # TODO BTW nummer migreren
-# TODO financieel/bankrekeningen migreren
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
@@ -96,7 +102,7 @@ contact_value_mapping = {
     "POSTCODE": "zip",
     "MANUALZIP": "manualzip",
     "GEMEENTE": "city",
-    "LANDCODE": "country_code",  # TODO convert in Odoo
+    "LANDCODE": "country_code",
     "TELEFOON": "phone",
     "MOBIEL": "mobile",
     "EMAIL": "email",
@@ -115,10 +121,6 @@ contact_value_mapping = {
     "CREATED": "create_date",
     # "CREATEDBY_ID": "create_uid",
     "MODIFIED": "write_date",
-}
-
-user_value_mapping = {
-    "ID": "id",
 }
 
 case_category_value_mapping = {
@@ -204,6 +206,8 @@ if __name__ == '__main__':
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
 
     con = connect_to_db(themis_db)
+    user_vals = get_table_values(con.cursor(), "GEBRUIKER", user_value_mapping)
+    user_id_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
     country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
     company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, country_code_id_mapping)
@@ -213,6 +217,8 @@ if __name__ == '__main__':
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
     case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, case_category_id_mapping)
+    # case_description_type_vals = get_table_values(con.cursor(), "OPMERKINGTYPE", case_description_type_value_mapping)
+    # case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
     party_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", party_category_value_mapping)
     party_category_id_mapping = create_themis_party_categories(args.url, args.odoodb, args.user, args.secret, party_category_vals)
     party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
@@ -228,8 +234,8 @@ if __name__ == '__main__':
     # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
-    # print_table_info_for_id(con.cursor(), "DOSSIERDOCUMENT", 200)
-    # create_table_csv(con.cursor(), "TAALTABEL", "TAALTABEL.csv")
+    # print_table_info_for_id(con.cursor(), "GEBRUIKER", 3)
+    # create_table_csv(con.cursor(), "GEBRUIKERPROFIEL", "GEBRUIKERPROFIEL.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)

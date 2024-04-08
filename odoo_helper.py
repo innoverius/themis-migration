@@ -23,6 +23,25 @@ def connect_to_odoo(url, database, username, secret):
     return models, uid
 
 
+def preprocess_user_values(user_vals):
+    id_list = []
+    for vals in user_vals:
+        id_list.append(vals.pop("id"))
+        vals["login"] = vals["email"]
+        vals["active"] = vals["active"] == "T"
+    return id_list
+
+
+def create_themis_users(url, database, username, secret, user_vals):
+    models, uid = connect_to_odoo(url, database, username, secret)
+    id_list = preprocess_user_values(user_vals)
+    response = models.execute_kw(database, uid, secret, "res.users", "create", [user_vals])
+    print(len(response))
+    id_mapping = dict(zip(id_list, response))
+    return id_mapping
+
+
+
 def get_country_code_id_mapping(url, database, username, secret):
     models, uid = connect_to_odoo(url, database, username, secret)
     response = models.execute_kw(database, uid, secret, 'res.country', 'search_read', [[]], {'fields': ['code', 'id']})
