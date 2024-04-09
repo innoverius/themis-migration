@@ -28,7 +28,7 @@ def preprocess_user_values(user_vals):
     duplicate_logins = {}
     for vals in user_vals:
         id_list.append(vals.pop("id"))
-        temp_login = vals["email"]
+        temp_login = vals["email"] or "login"
         if temp_login in duplicate_logins:
             login = temp_login + str(duplicate_logins[temp_login])
             duplicate_logins[temp_login] += 1
