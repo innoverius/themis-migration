@@ -25,9 +25,17 @@ def connect_to_odoo(url, database, username, secret):
 
 def preprocess_user_values(user_vals):
     id_list = []
+    duplicate_logins = {}
     for vals in user_vals:
         id_list.append(vals.pop("id"))
-        vals["login"] = vals["email"]
+        temp_login = vals["email"]
+        if temp_login in duplicate_logins:
+            login = temp_login + str(duplicate_logins[temp_login])
+            duplicate_logins[temp_login] += 1
+        else:
+            login = temp_login
+            duplicate_logins[temp_login] = 1
+        vals["login"] = login
         vals["active"] = vals["active"] == "T"
     return id_list
 
