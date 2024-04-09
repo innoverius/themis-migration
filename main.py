@@ -132,8 +132,12 @@ case_value_mapping = {
     "ID": "id",
     "OMSCHRIJVING": "name",
     "NUMMER": "reference_number",
+    "KANTOORBEHEERDER_ID": "user_id",
+    "FACTURATIEADRESBOEK_ID": "invoice_contact_id",
+    "FACTURATIEBEDRIJF_ID": "invoice_company_id",
     "DOSSIERCATEGORIE_ID": "category_id",
     "GEARCHIVEERD": "archived",
+    "REGISTREERDER_ID": "create_uid",
     "OPENINGSDATUM": "create_date",
     "MODIFIED": "write_date",
 }
@@ -216,7 +220,7 @@ if __name__ == '__main__':
     case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
-    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, user_id_mapping, case_category_id_mapping)
+    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     # case_description_type_vals = get_table_values(con.cursor(), "OPMERKINGTYPE", case_description_type_value_mapping)
     # case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
     party_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", party_category_value_mapping)
@@ -227,14 +231,14 @@ if __name__ == '__main__':
     document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
     document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
-    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, document_category_id_mapping)
+    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, user_id_mapping, document_category_id_mapping)
     con.close()
 
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
     # con = connect_to_db(themis_db)
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
-    # print_table_info_for_id(con.cursor(), "GEBRUIKER", 3)
+    # print_table_info_for_id(con.cursor(), "DOSSIER", 2835)
     # create_table_csv(con.cursor(), "GEBRUIKERPROFIEL", "GEBRUIKERPROFIEL.csv")
     # con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")

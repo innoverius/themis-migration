@@ -211,10 +211,16 @@ def create_themis_case_categories(url, database, username, secret, case_category
         return {}
 
 
-def preprocess_case_values(case_vals, user_id_mapping, case_category_id_mapping):
+def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
     id_list = []
     for vals in case_vals:
         id_list.append(vals.pop("id"))
+        invoice_company_id = vals.pop("invoice_company_id")
+        invoice_contact_id = vals.pop("invoice_contact_id")
+        invoice_id = (invoice_company_id and company_id_mapping[invoice_company_id]) or\
+                     (invoice_contact_id and contact_id_mapping[invoice_contact_id])
+        vals["partner_id"] = invoice_id
+        vals["user_id"] = vals["user_id"] and user_id_mapping[vals["user_id"]]
         if "archived" in vals:
             vals["active"] = vals.pop("archived") == "F"
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
@@ -225,9 +231,9 @@ def preprocess_case_values(case_vals, user_id_mapping, case_category_id_mapping)
     return id_list
 
 
-def create_themis_cases(url, database, username, secret, case_vals, user_id_mapping, case_category_id_mapping):
+def create_themis_cases(url, database, username, secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list = preprocess_case_values(case_vals, user_id_mapping, case_category_id_mapping)
+    id_list = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.case", "create", [case_vals])
     if len(id_list) == len(response):
         print(len(id_list))
@@ -289,7 +295,7 @@ def create_themis_document_categories(url, database, username, secret, document_
         return {}
 
 
-def preprocess_document_values(vals, document_path, case_id_mapping, document_category_id_mapping):
+def preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
     if "case_id" in vals:
         dir_nb = vals["case_id"]
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
@@ -304,6 +310,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, document_ca
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
+            vals["create_uid"] = vals["create_uid"] and user_id_mapping[vals["create_uid"]]
             vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
             vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
             return True
@@ -311,14 +318,14 @@ def preprocess_document_values(vals, document_path, case_id_mapping, document_ca
         return False
 
 
-def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, document_category_id_mapping):
+def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
     max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
-        if preprocess_document_values(vals, document_path, case_id_mapping, document_category_id_mapping):
+        if preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
             data_size = sys.getsizeof(vals["datas"])
             if temp_size + data_size < max_size:
                 temp_vals.append(vals)
