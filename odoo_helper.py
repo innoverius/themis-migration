@@ -90,7 +90,7 @@ def create_themis_party_categories(url, database, username, secret, party_catego
     return party_category_id_mapping
 
 
-def preprocess_company_values(company_vals, country_code_id_mapping):
+def preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping):
     id_list = []
     category_id_list = []
     company_bank_vals = []
@@ -116,15 +116,16 @@ def preprocess_company_values(company_vals, country_code_id_mapping):
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
             vals["is_company"] = True
+        vals["create_uid"] = user_id_mapping[vals["create_uid"]]
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
     return id_list, category_id_list, company_bank_vals
 
 
-def create_themis_companies(url, database, username, secret, company_vals, country_code_id_mapping):
+def create_themis_companies(url, database, username, secret, company_vals, user_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list, bank_vals = preprocess_company_values(company_vals, country_code_id_mapping)
+    id_list, category_id_list, bank_vals = preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
     print(len(response))
@@ -135,7 +136,7 @@ def create_themis_companies(url, database, username, secret, company_vals, count
     return id_mapping, category_id_mapping
 
 
-def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping):
+def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping):
     id_list = []
     category_id_list = []
     contact_bank_vals = []
@@ -171,15 +172,16 @@ def preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_
             print("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
+        vals["create_uid"] = user_id_mapping[vals["create_uid"]]
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
     return id_list, category_id_list, contact_bank_vals
 
 
-def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, country_code_id_mapping):
+def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, country_code_id_mapping)
+    id_list, category_id_list, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
     category_id_mapping = dict(zip(id_list, category_id_list))
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [contact_vals])
     print(len(response))
@@ -209,7 +211,7 @@ def create_themis_case_categories(url, database, username, secret, case_category
         return {}
 
 
-def preprocess_case_values(case_vals, case_category_id_mapping):
+def preprocess_case_values(case_vals, user_id_mapping, case_category_id_mapping):
     id_list = []
     for vals in case_vals:
         id_list.append(vals.pop("id"))
@@ -217,14 +219,15 @@ def preprocess_case_values(case_vals, case_category_id_mapping):
             vals["active"] = vals.pop("archived") == "F"
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
         vals["case_category_ids"] = categ_id and [(6, 0, [categ_id])]
+        vals["create_uid"] = user_id_mapping[vals["create_uid"]]
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
     return id_list
 
 
-def create_themis_cases(url, database, username, secret, case_vals, case_category_id_mapping):
+def create_themis_cases(url, database, username, secret, case_vals, user_id_mapping, case_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list = preprocess_case_values(case_vals, case_category_id_mapping)
+    id_list = preprocess_case_values(case_vals, user_id_mapping, case_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.case", "create", [case_vals])
     if len(id_list) == len(response):
         print(len(id_list))

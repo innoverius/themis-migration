@@ -88,7 +88,7 @@ company_value_mapping = {
     "ADRESCATEGORIE_ID": "category_id",
     "OPMERKING": "comment",
     "CREATED": "create_date",
-    # "CREATEDBY_ID": "create_uid",
+    "CREATEDBY_ID": "create_uid",
     "MODIFIED": "write_date",
 }
 
@@ -119,7 +119,7 @@ contact_value_mapping = {
     "ADRESCATEGORIE_ID": "category_id",
     "OPMERKING": "comment",
     "CREATED": "create_date",
-    # "CREATEDBY_ID": "create_uid",
+    "CREATEDBY_ID": "create_uid",
     "MODIFIED": "write_date",
 }
 
@@ -155,7 +155,7 @@ document_value_mapping = {
     "OMSCHRIJVING": "name",
     "BESTAND": "filename",
     "DOCUMENTMAP_ID": "category_id",
-    # "AANMAKER_ID": "create_uid",
+    "AANMAKER_ID": "create_uid",
     "AANMAAKDATUM": "create_date",
     "AANPASDATUM": "write_date",
 }
@@ -210,13 +210,13 @@ if __name__ == '__main__':
     user_id_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
     country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
     company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
-    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, country_code_id_mapping)
+    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, user_id_mapping, country_code_id_mapping)
     contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
-    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, country_code_id_mapping)
+    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
     case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
-    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, case_category_id_mapping)
+    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, user_id_mapping, case_category_id_mapping)
     # case_description_type_vals = get_table_values(con.cursor(), "OPMERKINGTYPE", case_description_type_value_mapping)
     # case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
     party_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", party_category_value_mapping)
