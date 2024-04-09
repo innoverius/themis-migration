@@ -253,6 +253,8 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
         if case_id and vals["description"]:
             description_name = case_description_name_mapping.get(vals["type_id"], False) or ""
             write_dict[str(case_id)] = {"description": vals["description"]}
+            print(write_dict)
+            break
     return write_dict
 
 
