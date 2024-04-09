@@ -250,9 +250,9 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
         case_description_name_mapping[type_vals["id"]] = type_vals["name"]
     for vals in case_description_vals:
         case_id = case_id_mapping.get(vals["case_id"], False)
-        if case_id and case_description_vals["description"]:
-            description_name = case_description_name_mapping.get(case_description_type_vals["type_id"], False) or ""
-            write_dict[case_id] = {"description": case_description_type_vals["description"]}
+        if case_id and vals["description"]:
+            description_name = case_description_name_mapping.get(vals["type_id"], False) or ""
+            write_dict[case_id] = {"description": vals["description"]}
     return write_dict
 
 
