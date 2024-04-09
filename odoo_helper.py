@@ -51,7 +51,7 @@ def create_themis_users(url, database, username, secret, user_vals):
     id_mapping = dict(zip(id_list, response))
     to_write_ids = []
     for inactive_id in inactive_id_list:
-        to_write_ids.append(id_mapping[inactive_id])
+        to_write_ids.append(id_mapping.get(inactive_id, False))
     models.execute_kw(database, uid, secret, "res.users", "write", [to_write_ids, {'active': False}])
     return id_mapping
 
@@ -116,7 +116,7 @@ def preprocess_company_values(company_vals, user_id_mapping, country_code_id_map
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
             vals["is_company"] = True
-        vals["create_uid"] = vals["create_uid"] and user_id_mapping[vals["create_uid"]]
+        vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
@@ -131,7 +131,7 @@ def create_themis_companies(url, database, username, secret, company_vals, user_
     print(len(response))
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
-        vals["partner_id"] = id_mapping[vals["partner_id"]]
+        vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
     models.execute_kw(database, uid, secret, "res.partner.bank", "create", [bank_vals])
     return id_mapping, category_id_mapping
 
@@ -172,7 +172,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping,
             print("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
-        vals["create_uid"] = vals["create_uid"] and user_id_mapping[vals["create_uid"]]
+        vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
         convert_values_to_bytes(vals, ["email", "comment"])
@@ -187,7 +187,7 @@ def create_themis_contacts(url, database, username, secret, contact_vals, compan
     print(len(response))
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
-        vals["partner_id"] = id_mapping[vals["partner_id"]]
+        vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
     models.execute_kw(database, uid, secret, "res.partner.bank", "create", [bank_vals])
     return id_mapping, category_id_mapping
 
@@ -217,15 +217,15 @@ def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, us
         id_list.append(vals.pop("id"))
         invoice_company_id = vals.pop("invoice_company_id")
         invoice_contact_id = vals.pop("invoice_contact_id")
-        invoice_id = (invoice_company_id and company_id_mapping[invoice_company_id]) or\
-                     (invoice_contact_id and contact_id_mapping[invoice_contact_id])
+        invoice_id = (invoice_company_id and company_id_mapping.get(invoice_company_id, False)) or\
+                     (invoice_contact_id and contact_id_mapping.get(invoice_contact_id, False))
         vals["partner_id"] = invoice_id
-        vals["user_id"] = vals["user_id"] and user_id_mapping[vals["user_id"]]
+        vals["user_id"] = vals["user_id"] and user_id_mapping.get(vals["user_id"], False)
         if "archived" in vals:
             vals["active"] = vals.pop("archived") == "F"
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
         vals["case_category_ids"] = categ_id and [(6, 0, [categ_id])]
-        vals["create_uid"] = vals["create_uid"] and user_id_mapping[vals["create_uid"]]
+        vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
         vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
     return id_list
@@ -310,7 +310,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
-            vals["create_uid"] = vals["create_uid"] and user_id_mapping[vals["create_uid"]]
+            vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
             vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
             vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
             return True
