@@ -243,6 +243,26 @@ def create_themis_cases(url, database, username, secret, case_vals, company_id_m
         return {}
 
 
+def preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping):
+    write_dict = {}
+    case_description_name_mapping = {}
+    for type_vals in case_description_type_vals:
+        case_description_name_mapping[type_vals["id"]] = type_vals["name"]
+    for vals in case_description_vals:
+        case_id = case_id_mapping.get(vals["case_id"], False)
+        if case_id and case_description_vals["description"]:
+            description_name = case_description_name_mapping.get(case_description_type_vals["type_id"], False) or ""
+            write_dict[case_id] = {"description": case_description_type_vals["description"]}
+    return write_dict
+
+
+def write_case_descriptions(url, database, username, secret, case_description_vals, case_description_type_vals, case_id_mapping):
+    models, uid = connect_to_odoo(url, database, username, secret)
+    write_dict = preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping)
+    models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", write_dict)
+    print(write_dict.keys())
+
+
 def preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping):
     for vals in party_vals:
         themis_company_id = vals.pop("company_id")
