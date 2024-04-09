@@ -25,9 +25,11 @@ def connect_to_odoo(url, database, username, secret):
 
 def preprocess_user_values(user_vals):
     id_list = []
+    inactive_id_list = []
     duplicate_logins = {}
     for vals in user_vals:
-        id_list.append(vals.pop("id"))
+        user_id = vals.pop("id")
+        id_list.append(user_id)
         temp_login = vals["email"] or "login"
         if temp_login in duplicate_logins:
             login = temp_login + str(duplicate_logins[temp_login])
@@ -36,18 +38,22 @@ def preprocess_user_values(user_vals):
             login = temp_login
             duplicate_logins[temp_login] = 1
         vals["login"] = login
-        vals["active"] = vals["active"] == "T"
-    return id_list
+        if vals.pop("active") != "T":
+            inactive_id_list.append(user_id)
+    return id_list, inactive_id_list
 
 
 def create_themis_users(url, database, username, secret, user_vals):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list = preprocess_user_values(user_vals)
+    id_list, inactive_id_list = preprocess_user_values(user_vals)
     response = models.execute_kw(database, uid, secret, "res.users", "create", [user_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
+    to_write_ids = []
+    for inactive_id in inactive_id_list:
+        to_write_ids.append(id_mapping[inactive_id])
+    models.execute_kw(database, uid, secret, "res.users", "write", [to_write_ids, {'active': False}])
     return id_mapping
-
 
 
 def get_country_code_id_mapping(url, database, username, secret):
