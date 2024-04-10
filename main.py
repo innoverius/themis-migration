@@ -244,8 +244,8 @@ if __name__ == '__main__':
     for vals in case_description_vals:
         case_id = vals["case_id"]
         if case_id and vals["description"]:
-            if type(vals["description"]) != bytes:
-                print(inspect.getmembers(vals["description"]))
+            print(type(vals["description"]))
+            # print(inspect.getmembers(vals["description"]))
             test = rtf_to_text(vals["description"].decode("cp1252"))
             write_dict[str(case_id)] = {"description": test}
     print(write_dict)
