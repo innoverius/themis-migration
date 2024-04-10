@@ -239,7 +239,8 @@ if __name__ == '__main__':
 
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
     con = connect_to_db(themis_db)
-    case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
+    cr = con.cursor()
+    case_description_vals = get_table_values(cr, "DOSSIEROPMERKING", case_description_value_mapping)
     write_dict = {}
     for vals in case_description_vals:
         case_id = vals["case_id"]
@@ -263,6 +264,7 @@ if __name__ == '__main__':
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
     # print_table_info_for_id(con.cursor(), "DOSSIER", 2835)
     # create_table_csv(con.cursor(), "GEBRUIKERPROFIEL", "GEBRUIKERPROFIEL.csv")
+    cr.close()
     con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
