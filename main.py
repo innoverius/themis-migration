@@ -245,7 +245,7 @@ if __name__ == '__main__':
         case_id = vals["case_id"]
         if case_id and vals["description"]:
             if type(vals["description"]) is not bytes:
-                print(type(vals["description"]))
+                print(type(vals["description"].read()))
             # print(inspect.getmembers(vals["description"]))
             else:
                 test = rtf_to_text(vals["description"].decode("cp1252"))
