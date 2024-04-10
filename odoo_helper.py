@@ -261,7 +261,7 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
 def write_case_descriptions(url, database, username, secret, case_description_vals, case_description_type_vals, case_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     write_dict = preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping)
-    models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", write_dict)
+    models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", [write_dict])
     print(write_dict.keys())
 
 
