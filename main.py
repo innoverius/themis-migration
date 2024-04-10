@@ -250,7 +250,7 @@ if __name__ == '__main__':
             else:
                 test = rtf_to_text(vals["description"].decode("cp1252"))
                 write_dict[str(case_id)] = {"description": test}
-    print(write_dict)
+    # print(write_dict)
     # (url, database, username, secret) = (args.url, args.odoodb, args.user, args.secret)
     # models, uid = connect_to_odoo(url, database, username, secret)
     # models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", [write_dict])
