@@ -246,16 +246,12 @@ if __name__ == '__main__':
         case_id = vals["case_id"]
         if case_id and vals["description"]:
             if type(vals["description"]) is not bytes:
-                print("TESTING BLOBREADER")
-                print(vals["description"])
-                print(vals["description"].length)
-                print(vals["description"].is_text())
-                print(vals["description"].closed)
-                print(type(vals["description"].read()))
+                desc_bytes = vals["description"].read()
             # print(inspect.getmembers(vals["description"]))
             else:
-                test = rtf_to_text(vals["description"].decode("cp1252"))
-                write_dict[str(case_id)] = {"description": test}
+                desc_bytes = vals["description"]
+            test = rtf_to_text(desc_bytes.decode("cp1252"))
+            write_dict[str(case_id)] = {"description": test}
     # print(write_dict)
     # (url, database, username, secret) = (args.url, args.odoodb, args.user, args.secret)
     # models, uid = connect_to_odoo(url, database, username, secret)
