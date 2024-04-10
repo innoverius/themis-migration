@@ -1,1 +1,2 @@
 firebird-driver
+striprtf
