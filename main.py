@@ -1,6 +1,8 @@
 import csv
 import os
 import argparse
+import inspect
+from striprtf.striprtf import rtf_to_text
 
 from themis_helper import connect_to_db, get_table_rows, get_table_values
 from odoo_helper import *
@@ -209,39 +211,52 @@ if __name__ == '__main__':
     themis_db = args.themisdb
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
 
-    con = connect_to_db(themis_db)
-    user_vals = get_table_values(con.cursor(), "GEBRUIKER", user_value_mapping)
-    user_id_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
-    country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
-    company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
-    company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, user_id_mapping, country_code_id_mapping)
-    contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
-    contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
-    case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
-    case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
-    case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
-    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
-    case_description_type_vals = get_table_values(con.cursor(), "OPMERKINGTYPE", case_description_type_value_mapping)
-    case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
-    write_case_descriptions(args.url, args.odoodb, args.user, args.secret, case_description_vals, case_description_type_vals, case_id_mapping)
-    party_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", party_category_value_mapping)
-    party_category_id_mapping = create_themis_party_categories(args.url, args.odoodb, args.user, args.secret, party_category_vals)
-    party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
-    create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
-    document_category_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENTMAP", document_category_value_mapping)
-    document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
-    document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
-    document_vals = list(filter(lambda x: x["case_id"], document_vals))
-    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, user_id_mapping, document_category_id_mapping)
-    con.close()
+    # con = connect_to_db(themis_db)
+    # user_vals = get_table_values(con.cursor(), "GEBRUIKER", user_value_mapping)
+    # user_id_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
+    # country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
+    # company_vals = get_table_values(con.cursor(), "BEDRIJF", company_value_mapping)
+    # company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, user_id_mapping, country_code_id_mapping)
+    # contact_vals = get_table_values(con.cursor(), "ADRESBOEK", contact_value_mapping)
+    # contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
+    # case_category_vals = get_table_values(con.cursor(), "DOSSIERCATEGORIE", case_category_value_mapping)
+    # case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
+    # case_vals = get_table_values(con.cursor(), "DOSSIER", case_value_mapping)
+    # case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
+    # case_description_type_vals = get_table_values(con.cursor(), "OPMERKINGTYPE", case_description_type_value_mapping)
+    # case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
+    # write_case_descriptions(args.url, args.odoodb, args.user, args.secret, case_description_vals, case_description_type_vals, case_id_mapping)
+    # party_category_vals = get_table_values(con.cursor(), "ADRESCATEGORIE", party_category_value_mapping)
+    # party_category_id_mapping = create_themis_party_categories(args.url, args.odoodb, args.user, args.secret, party_category_vals)
+    # party_vals = get_table_values(con.cursor(), "DOSSIERADRESBOEK", party_value_mapping)
+    # create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
+    # document_category_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENTMAP", document_category_value_mapping)
+    # document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
+    # document_vals = get_table_values(con.cursor(), "DOSSIERDOCUMENT", document_value_mapping)
+    # document_vals = list(filter(lambda x: x["case_id"], document_vals))
+    # create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, user_id_mapping, document_category_id_mapping)
+    # con.close()
 
     # create_csv_files(db_path, username, pwd, ["ADRESBOEK", "BEDRIJF", "DOSSIER", "GEBRUIKER", "DOSSIERADRESBOEK", "VENNOOTSCHAP"])
-    # con = connect_to_db(themis_db)
+    con = connect_to_db(themis_db)
+    case_description_vals = get_table_values(con.cursor(), "DOSSIEROPMERKING", case_description_value_mapping)
+    write_dict = {}
+    for vals in case_description_vals:
+        case_id = vals["case_id"]
+        if case_id and vals["description"]:
+            if type(vals["description"]) != bytes:
+                print(inspect.getmembers(vals["description"]))
+            test = rtf_to_text(vals["description"].decode("cp1252"))
+            write_dict[str(case_id)] = {"description": test}
+    print(write_dict)
+    # (url, database, username, secret) = (args.url, args.odoodb, args.user, args.secret)
+    # models, uid = connect_to_odoo(url, database, username, secret)
+    # models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", [write_dict])
     # print_db_tables(con.cursor())
     # print_table_columns(con.cursor(), "DOCUMENTTYPE")
     # print_table_info_for_id(con.cursor(), "DOSSIER", 2835)
     # create_table_csv(con.cursor(), "GEBRUIKERPROFIEL", "GEBRUIKERPROFIEL.csv")
-    # con.close()
+    con.close()
     # create_table_csv(con.cursor(), "BEDRIJF", "company.csv")
     # print_table_info_for_id(con.cursor(), "DOSSIERADRESBOEK", 5)
     # cols = [str(col[0]) for col in table_cols]
