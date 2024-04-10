@@ -246,6 +246,7 @@ if __name__ == '__main__':
         if case_id and vals["description"]:
             if type(vals["description"]) is not bytes:
                 print("TESTING BLOBREADER")
+                print(vals["description"])
                 print(vals["description"].length())
                 print(vals["description"].is_text())
                 print(vals["description"].closed())
