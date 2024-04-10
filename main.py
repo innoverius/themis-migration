@@ -244,10 +244,12 @@ if __name__ == '__main__':
     for vals in case_description_vals:
         case_id = vals["case_id"]
         if case_id and vals["description"]:
-            print(type(vals["description"]) is bytes)
+            if type(vals["description"]) is not bytes:
+                print(type(vals["description"]))
             # print(inspect.getmembers(vals["description"]))
-            test = rtf_to_text(vals["description"].decode("cp1252"))
-            write_dict[str(case_id)] = {"description": test}
+            else:
+                test = rtf_to_text(vals["description"].decode("cp1252"))
+                write_dict[str(case_id)] = {"description": test}
     print(write_dict)
     # (url, database, username, secret) = (args.url, args.odoodb, args.user, args.secret)
     # models, uid = connect_to_odoo(url, database, username, secret)
