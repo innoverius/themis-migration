@@ -245,7 +245,10 @@ if __name__ == '__main__':
         case_id = vals["case_id"]
         if case_id and vals["description"]:
             if type(vals["description"]) is not bytes:
-                print(type(vals["description"].read()))
+                print("TESTING BLOBREADER")
+                print(type(vals["description"].length()))
+                print(type(vals["description"].is_text()))
+                print(type(vals["description"].closed()))
             # print(inspect.getmembers(vals["description"]))
             else:
                 test = rtf_to_text(vals["description"].decode("cp1252"))
