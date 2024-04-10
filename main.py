@@ -247,9 +247,10 @@ if __name__ == '__main__':
             if type(vals["description"]) is not bytes:
                 print("TESTING BLOBREADER")
                 print(vals["description"])
-                print(vals["description"].length())
+                print(vals["description"].length)
                 print(vals["description"].is_text())
-                print(vals["description"].closed())
+                print(vals["description"].closed)
+                print(vals["description"].blob_type)
             # print(inspect.getmembers(vals["description"]))
             else:
                 test = rtf_to_text(vals["description"].decode("cp1252"))
