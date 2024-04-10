@@ -251,7 +251,7 @@ if __name__ == '__main__':
                 print(vals["description"].length)
                 print(vals["description"].is_text())
                 print(vals["description"].closed)
-                print(vals["description"].blob_type)
+                print(type(vals["description"].read()))
             # print(inspect.getmembers(vals["description"]))
             else:
                 test = rtf_to_text(vals["description"].decode("cp1252"))
