@@ -253,7 +253,11 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
         case_id = case_id_mapping.get(vals["case_id"], False)
         if case_id and vals["description"]:
             description_name = case_description_name_mapping.get(vals["type_id"], False) or ""
-            write_dict[str(case_id)] = {"description": rtf_to_text(vals["description"].decode("cp1252"))}
+            if type(vals["description"]) is not bytes:
+                desc_bytes = vals["description"].read()
+            else:
+                desc_bytes = vals["description"]
+            write_dict[str(case_id)] = {"description": rtf_to_text(desc_bytes.decode("cp1252"))}
     return write_dict
 
 
