@@ -253,11 +253,18 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
         case_id = case_id_mapping.get(vals["case_id"], False)
         if case_id and vals["description"]:
             description_name = case_description_name_mapping.get(vals["type_id"], False) or ""
+            description_name = description_name and (description_name + ":")
             if type(vals["description"]) is not bytes:
                 desc_bytes = vals["description"].read()
             else:
                 desc_bytes = vals["description"]
-            write_dict[str(case_id)] = {"description": rtf_to_text(desc_bytes.decode("cp1252"))}
+            text = rtf_to_text(desc_bytes.decode("cp1252")).replace("\n", "<br>\n")
+            text = description_name + "<br>\n" + text + "<br>\n"
+            if str(case_id) in write_dict:
+                print(case_id)
+                write_dict[str(case_id)]["description"] += text
+            else:
+                write_dict[str(case_id)] = {"description": text}
     return write_dict
 
 
@@ -265,7 +272,6 @@ def write_case_descriptions(url, database, username, secret, case_description_va
     models, uid = connect_to_odoo(url, database, username, secret)
     write_dict = preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping)
     models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", [write_dict])
-    print(write_dict.keys())
 
 
 def preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping):
