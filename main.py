@@ -109,6 +109,8 @@ contact_value_mapping = {
     "BEROEP": "function",
     "NAAM": "lastname",
     "VOORNAAM": "firstname",
+    "AANSPREKING_TITEL": "title",
+    "AANSPREKING_GEACHTE": "salutation",
     "GESLACHT": "gender",
     "GEBOORTEDATUM": "dateofbirth",
     "GEBOORTEPLAATS": "placeofbirth",
