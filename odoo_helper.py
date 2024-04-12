@@ -235,7 +235,7 @@ def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, us
 def create_themis_cases(url, database, username, secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
-    response = models.execute_kw(database, uid, secret, "cases.case", "create", [case_vals])
+    response = models.execute_kw(database, uid, secret, "cases.case", "create_from_themis", [case_vals])
     if len(id_list) == len(response):
         print(len(id_list))
         id_mapping = dict(zip(id_list, response))
