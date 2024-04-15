@@ -356,8 +356,11 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
+        dir_nb = vals.get("case_id", "")
         if preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
             data_size = sys.getsizeof(vals["datas"])
+            if data_size > 30000000:
+                print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
             if temp_size + data_size < max_size:
                 temp_vals.append(vals)
                 temp_size += data_size
