@@ -338,6 +338,11 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
             print("File at " + str(filepath) + " not found.")
             return False
         else:
+            data_size = sys.getsizeof(datas)
+            if data_size > 30000000:
+                print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
+            else:
+                return False
             vals["datas"] = StringIO(datas)
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
