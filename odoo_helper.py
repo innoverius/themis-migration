@@ -361,14 +361,15 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
             data_size = sys.getsizeof(vals["datas"])
             if data_size > 30000000:
                 print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
-            if temp_size + data_size < max_size:
-                temp_vals.append(vals)
-                temp_size += data_size
-            else:
-                response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
-                temp_vals = [vals]
-                temp_size = data_size
-                print(len(response))
+                response = models.execute_kw(database, uid, secret, "cases.document", "create", [[vals]])
+            # if temp_size + data_size < max_size:
+            #     temp_vals.append(vals)
+            #     temp_size += data_size
+            # else:
+            #     response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
+            #     temp_vals = [vals]
+            #     temp_size = data_size
+            #     print(len(response))
     if temp_vals:
         response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
         print(len(response))
