@@ -3,6 +3,7 @@ import sys
 import base64
 import xmlrpc.client
 from striprtf.striprtf import rtf_to_text
+from io import StringIO
 from datetime import datetime
 
 
@@ -332,12 +333,12 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
         try:
             with open(filepath, "rb") as data:
-                datas = base64.b64encode(data.read())  # .decode("utf-8")
+                datas = base64.b64encode(data.read()).decode("utf-8")
         except FileNotFoundError:
             print("File at " + str(filepath) + " not found.")
             return False
         else:
-            vals["datas"] = datas
+            vals["datas"] = StringIO(datas)
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
