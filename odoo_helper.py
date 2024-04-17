@@ -338,12 +338,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
             print("File at " + str(filepath) + " not found.")
             return False
         else:
-            data_size = sys.getsizeof(datas)
-            if data_size > 30000000:
-                print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
-            else:
-                return False
-            vals["datas"] = StringIO(datas)
+            vals["datas"] = datas
             vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
@@ -367,7 +362,11 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
             data_size = sys.getsizeof(vals["datas"])
             if data_size > 30000000:
                 print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
-            response = models.execute_kw(database, uid, secret, "cases.document", "create", [[vals]])
+                try:
+                    response = models.execute_kw(database, uid, secret, "cases.document", "create", [[vals]])
+                except Exception as e:
+                    print("Error occurred: ", e)
+
             # if temp_size + data_size < max_size:
             #     temp_vals.append(vals)
             #     temp_size += data_size
