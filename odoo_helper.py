@@ -3,7 +3,6 @@ import sys
 import base64
 import xmlrpc.client
 from striprtf.striprtf import rtf_to_text
-from io import StringIO
 from datetime import datetime
 
 
@@ -333,13 +332,9 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
         try:
             with open(filepath, "rb") as data:
-                data_bytes = data.read()
-                if len(data_bytes) < 100000000:
-                    return False
-                print("LARGE BYTES: ", str(len(data_bytes)))
-                datas = base64.b64encode(data_bytes).decode("utf-8")
+                datas = base64.b64encode(data.read()).decode("utf-8")
         except FileNotFoundError:
-            # print("File at " + str(filepath) + " not found.")
+            print("File at " + str(filepath) + " not found.")
             return False
         else:
             vals["datas"] = datas
@@ -358,27 +353,23 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
-    max_size = 30000000
+    max_size = 300000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
-        dir_nb = vals.get("case_id", "")
         if preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
             data_size = sys.getsizeof(vals["datas"])
-            if data_size > 30000000:
-                print("LARGE FILE: " + str(data_size) + "  /" + str(dir_nb) + "/" + str(vals["filename"]))
+            if temp_size + data_size < max_size:
+                temp_vals.append(vals)
+                temp_size += data_size
+            else:
                 try:
-                    response = models.execute_kw(database, uid, secret, "cases.document", "create", [[vals]])
+                    response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
                 except Exception as e:
-                    print("Error occurred: ", e)
-
-            # if temp_size + data_size < max_size:
-            #     temp_vals.append(vals)
-            #     temp_size += data_size
-            # else:
-            #     response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
-            #     temp_vals = [vals]
-            #     temp_size = data_size
-            #     print(len(response))
+                    print("Error occured when migrating documents: \n", e)
+                else:
+                    print(len(response))
+                temp_vals = [vals]
+                temp_size = data_size
     if temp_vals:
         response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
         print(len(response))
