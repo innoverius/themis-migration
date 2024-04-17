@@ -333,9 +333,13 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
         try:
             with open(filepath, "rb") as data:
-                datas = base64.b64encode(data.read()).decode("utf-8")
+                data_bytes = data.read()
+                if len(data_bytes) < 100000000:
+                    return False
+                print("LARGE BYTES: ", str(len(data_bytes)))
+                datas = base64.b64encode(data_bytes).decode("utf-8")
         except FileNotFoundError:
-            print("File at " + str(filepath) + " not found.")
+            # print("File at " + str(filepath) + " not found.")
             return False
         else:
             vals["datas"] = datas
