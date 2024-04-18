@@ -349,6 +349,24 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
         return False
 
 
+def create_documents(models, database, uid, secret, vals_list):
+    if vals_list:
+        try:
+            response = models.execute_kw(database, uid, secret, "cases.document", "create", [vals_list])
+        except Exception as e:
+            if len(vals_list) == 1:
+                print("Error occured when migrating document: \n", e)
+                print("Document name: " + str(vals_list[0].get("filename", "")))
+                print("Odoo case id: " + str(vals_list[0].get("case_id", "")))
+            else:
+                lst1 = vals_list[:len(vals_list) // 2]
+                create_documents(models, database, uid, secret, lst1)
+                lst2 = vals_list[len(vals_list) // 2:]
+                create_documents(models, database, uid, secret, lst2)
+        else:
+            print(len(response))
+
+
 def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
@@ -362,12 +380,7 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
                 temp_vals.append(vals)
                 temp_size += data_size
             else:
-                try:
-                    response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
-                except Exception as e:
-                    print("Error occured when migrating documents: \n", e)
-                else:
-                    print(len(response))
+                create_documents(models, database, uid, secret, temp_vals)
                 temp_vals = [vals]
                 temp_size = data_size
     if temp_vals:
