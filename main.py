@@ -92,7 +92,6 @@ company_value_mapping = {
     "MODIFIED": "write_date",
 }
 
-# TODO aanspreking en dergelijke
 contact_value_mapping = {
     "ID": "id",
     "BEDRIJF_ID": "parent_id",
@@ -156,6 +155,8 @@ document_category_value_mapping = {
     "OMSCHRIJVING": "name",
 }
 
+# TODO archive documents of archived case
+# TODO create date and write date
 document_value_mapping = {
     "LINKEDTO_ID": "case_id",
     "OMSCHRIJVING": "name",
@@ -166,7 +167,6 @@ document_value_mapping = {
     "AANPASDATUM": "write_date",
 }
 
-# TODO migrate case descriptions
 case_description_type_value_mapping = {
     "ID": "id",
     "N": "name",
