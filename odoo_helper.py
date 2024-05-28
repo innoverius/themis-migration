@@ -3,10 +3,10 @@ import sys
 import base64
 import xmlrpc.client
 from striprtf.striprtf import rtf_to_text
-from datetime import datetime
 
 
 themis_datetime_format = "%Y-%m-%d %H:%M:%S"
+odoo_datetime_format = "%Y-%m-%d %H:%M:%S"
 
 
 language_mapping = {
@@ -91,6 +91,13 @@ def create_themis_party_categories(url, database, username, secret, party_catego
     return party_category_id_mapping
 
 
+def preprocess_create_write_dates(vals):
+    # vals["create_date"] = vals["create_date"] or vals["write_date"]
+    # vals["write_date"] = vals["write_date"] or vals["create_date"]
+    vals["create_date"] = vals["create_date"] and vals["create_date"].strftime(odoo_datetime_format)
+    vals["write_date"] = vals["write_date"] and vals["write_date"].strftime(odoo_datetime_format)
+
+
 def preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping):
     id_list = []
     category_id_list = []
@@ -118,9 +125,8 @@ def preprocess_company_values(company_vals, user_id_mapping, country_code_id_map
         if "is_company" not in vals:
             vals["is_company"] = True
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
-        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
-        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
-        convert_values_to_bytes(vals, ["email", "comment"])
+        preprocess_create_write_dates(vals)
+        convert_values_to_bytes(vals, ["email", "email2", "email3", "comment"])
     return id_list, category_id_list, company_bank_vals
 
 
@@ -174,9 +180,8 @@ def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping,
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
-        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
-        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
-        convert_values_to_bytes(vals, ["email", "comment"])
+        preprocess_create_write_dates(vals)
+        convert_values_to_bytes(vals, ["email", "email2", "email3", "comment"])
     return id_list, category_id_list, contact_bank_vals
 
 
@@ -227,8 +232,7 @@ def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, us
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
         vals["case_category_ids"] = categ_id and [(6, 0, [categ_id])]
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
-        vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
-        vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
+        preprocess_create_write_dates(vals)
     return id_list
 
 
@@ -343,8 +347,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
             vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
-            vals["create_date"] = vals["create_date"] and vals["create_date"].isoformat()
-            vals["write_date"] = vals["write_date"] and vals["write_date"].isoformat()
+            preprocess_create_write_dates(vals)
             return True
     else:
         return False

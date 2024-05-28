@@ -69,6 +69,8 @@ party_category_value_mapping = {
 }
 
 # TODO BTW nummer migreren
+# TODO deal with multiple phones/emails
+# TODO deal with multiple bank numbers?
 company_value_mapping = {
     "ID": "id",
     "NAAM": "name",
@@ -79,8 +81,11 @@ company_value_mapping = {
     "POSTCODE": "zip",
     "GEMEENTE": "city",
     "TELEFOON": "phone",
+    "TELEFOON2": "phone2",
     "MOBIEL": "mobile",
     "EMAIL": "email",
+    "EMAIL2": "email2",
+    "EMAIL3": "email3",
     "TAALCODE": "language",
     "URL": "website",
     "VENNOOTSCHAPSNAAM": "company_name",
@@ -103,8 +108,11 @@ contact_value_mapping = {
     "GEMEENTE": "city",
     "LANDCODE": "country_code",
     "TELEFOON": "phone",
+    "TELEFOON2": "phone2",
     "MOBIEL": "mobile",
     "EMAIL": "email",
+    "EMAIL2": "email2",
+    "EMAIL3": "email3",
     "BEROEP": "function",
     "NAAM": "lastname",
     "VOORNAAM": "firstname",
