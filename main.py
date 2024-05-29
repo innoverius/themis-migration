@@ -68,8 +68,6 @@ party_category_value_mapping = {
     "OMSCHRIJVING": "name",
 }
 
-# TODO BTW nummer migreren
-# TODO deal with multiple phones/emails
 # TODO deal with multiple bank numbers?
 company_value_mapping = {
     "ID": "id",
@@ -231,7 +229,7 @@ if __name__ == '__main__':
     case_category_vals = get_table_values(cr, "DOSSIERCATEGORIE", case_category_value_mapping)
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(cr, "DOSSIER", case_value_mapping)
-    case_id_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
+    case_id_mapping, active_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     case_description_type_vals = get_table_values(cr, "OPMERKINGTYPE", case_description_type_value_mapping)
     case_description_vals = get_table_values(cr, "DOSSIEROPMERKING", case_description_value_mapping)
     write_case_descriptions(args.url, args.odoodb, args.user, args.secret, case_description_vals, case_description_type_vals, case_id_mapping)
@@ -243,7 +241,7 @@ if __name__ == '__main__':
     document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
     document_vals = get_table_values(cr, "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
-    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, user_id_mapping, document_category_id_mapping)
+    create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping)
     cr.close()
     con.close()
 

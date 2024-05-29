@@ -127,13 +127,13 @@ def preprocess_company_values(company_vals, user_id_mapping, country_code_id_map
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         preprocess_create_write_dates(vals)
         convert_values_to_bytes(vals, ["email", "email2", "email3", "comment"])
-    return id_list, category_id_list, company_bank_vals
+    category_id_mapping = dict(zip(id_list, category_id_list))
+    return id_list, category_id_mapping, company_bank_vals
 
 
 def create_themis_companies(url, database, username, secret, company_vals, user_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list, bank_vals = preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping)
-    category_id_mapping = dict(zip(id_list, category_id_list))
+    id_list, category_id_mapping, bank_vals = preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
@@ -182,13 +182,13 @@ def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping,
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         preprocess_create_write_dates(vals)
         convert_values_to_bytes(vals, ["email", "email2", "email3", "comment"])
-    return id_list, category_id_list, contact_bank_vals
+    category_id_mapping = dict(zip(id_list, category_id_list))
+    return id_list, category_id_mapping, contact_bank_vals
 
 
 def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list, category_id_list, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
-    category_id_mapping = dict(zip(id_list, category_id_list))
+    id_list, category_id_mapping, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [contact_vals])
     print(len(response))
     id_mapping = dict(zip(id_list, response))
@@ -219,6 +219,7 @@ def create_themis_case_categories(url, database, username, secret, case_category
 
 def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
     id_list = []
+    active_list = []
     for vals in case_vals:
         id_list.append(vals.pop("id"))
         invoice_company_id = vals.pop("invoice_company_id")
@@ -229,23 +230,27 @@ def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, us
         vals["user_id"] = vals["user_id"] and user_id_mapping.get(vals["user_id"], False)
         if "archived" in vals:
             vals["active"] = vals.pop("archived") == "F"
+            active_list.append(vals["active"])
+        else:
+            active_list.append(True)
         categ_id = case_category_id_mapping.get(vals.pop("category_id"), False)
         vals["case_category_ids"] = categ_id and [(6, 0, [categ_id])]
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
         preprocess_create_write_dates(vals)
-    return id_list
+    active_mapping = dict(zip(id_list, active_list))
+    return id_list, active_mapping
 
 
 def create_themis_cases(url, database, username, secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
-    id_list = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
+    id_list, active_mapping = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.case", "create_from_themis", [case_vals])
     if len(id_list) == len(response):
         print(len(id_list))
         id_mapping = dict(zip(id_list, response))
-        return id_mapping
+        return id_mapping, active_mapping
     else:
-        return {}
+        return {}, {}
 
 
 def preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping):
@@ -330,7 +335,7 @@ def create_themis_document_categories(url, database, username, secret, document_
         return {}
 
 
-def preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
+def preprocess_document_values(vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
     if "case_id" in vals:
         dir_nb = vals["case_id"]
         filepath = os.path.join(document_path, str(dir_nb) + "/" + vals["filename"])
@@ -343,7 +348,9 @@ def preprocess_document_values(vals, document_path, case_id_mapping, user_id_map
             return False
         else:
             vals["datas"] = datas
-            vals["case_id"] = case_id_mapping.get(vals["case_id"], False)
+            themis_case_id = vals["case_id"]
+            vals["active"] = active_mapping[themis_case_id]
+            vals["case_id"] = case_id_mapping.get(themis_case_id, False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
             vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
@@ -371,14 +378,14 @@ def create_documents(models, database, uid, secret, vals_list):
             print(len(response))
 
 
-def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
+def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
     max_size = 300000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
-        if preprocess_document_values(vals, document_path, case_id_mapping, user_id_mapping, document_category_id_mapping):
+        if preprocess_document_values(vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
             data_size = sys.getsizeof(vals["datas"])
             if temp_size + data_size < max_size:
                 temp_vals.append(vals)
