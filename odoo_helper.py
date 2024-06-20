@@ -361,6 +361,8 @@ def preprocess_document_values(vals, document_path, case_id_mapping, active_mapp
 
 
 def create_documents(models, database, uid, secret, vals_list):
+    print("CREATING DOCUMENTS:")
+    print([vals.get("filename", "") for vals in vals_list])
     if vals_list:
         try:
             response = models.execute_kw(database, uid, secret, "cases.document", "create", [vals_list])
@@ -382,7 +384,7 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
-    max_size = 300000000
+    max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
         if preprocess_document_values(vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
