@@ -349,7 +349,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, active_mapp
         else:
             vals["datas"] = datas
             themis_case_id = vals["case_id"]
-            vals["active"] = active_mapping[themis_case_id]
+            vals["active"] = active_mapping.get(themis_case_id, True)
             vals["case_id"] = case_id_mapping.get(themis_case_id, False)
             categ_id = document_category_id_mapping.get(vals.pop("category_id"), False)
             vals["document_category_ids"] = categ_id and [(6, 0, [categ_id])]
