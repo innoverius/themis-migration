@@ -363,7 +363,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, active_mapp
 def create_documents(models, database, uid, secret, vals_list):
     if vals_list:
         try:
-            response = models.execute_kw(database, uid, secret, "cases.document", "create", [vals_list])
+            response = models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [vals_list])
         except Exception as e:
             if len(vals_list) == 1:
                 print("Error occured when migrating document: \n", e)
@@ -395,5 +395,5 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
                 temp_vals = [vals]
                 temp_size = data_size
     if temp_vals:
-        response = models.execute_kw(database, uid, secret, "cases.document", "create", [temp_vals])
+        response = models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [temp_vals])
         print(len(response))
