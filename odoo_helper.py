@@ -379,7 +379,6 @@ def create_documents(models, database, uid, secret, vals_list):
 
 
 def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
-    models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
     max_size = 300000000
@@ -391,9 +390,11 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
                 temp_vals.append(vals)
                 temp_size += data_size
             else:
+                models, uid = connect_to_odoo(url, database, username, secret)
                 create_documents(models, database, uid, secret, temp_vals)
                 temp_vals = [vals]
                 temp_size = data_size
     if temp_vals:
+        models, uid = connect_to_odoo(url, database, username, secret)
         response = models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [temp_vals])
         print(len(response))
