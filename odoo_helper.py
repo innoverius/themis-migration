@@ -382,7 +382,7 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
-    max_size = 300000
+    max_size = 300000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
         if preprocess_document_values(vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
@@ -391,11 +391,7 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
                 temp_vals.append(vals)
                 temp_size += data_size
             else:
-                # create_documents(models, database, uid, secret, temp_vals)
-                print("Creating documents:")
-                for temp in temp_vals:
-                    print(temp["filename"])
-                models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [temp_vals])
+                create_documents(models, database, uid, secret, temp_vals)
                 temp_vals = [vals]
                 temp_size = data_size
     if temp_vals:
