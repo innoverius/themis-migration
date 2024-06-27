@@ -370,6 +370,8 @@ def create_documents(models, database, uid, secret, vals_list):
                 print("Document name: " + str(vals_list[0].get("filename", "")))
                 print("Odoo case id: " + str(vals_list[0].get("case_id", "")))
             else:
+                print("Error occured when migrating documents: \n", e)
+                print("Splitting documents into 2 ...")
                 lst1 = vals_list[:len(vals_list) // 2]
                 create_documents(models, database, uid, secret, lst1)
                 lst2 = vals_list[len(vals_list) // 2:]
