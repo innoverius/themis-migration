@@ -384,7 +384,7 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
-    max_size = 300000000
+    max_size = 30000000
     while len(document_vals) > 0:
         vals = document_vals.pop()
         if preprocess_document_values(vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
