@@ -217,18 +217,20 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    themis_db = args.themisdb
-    # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
+
     logfile = args.logfile
     logfilepath = Path(logfile)
     logfilepath.parent.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(filename=logfile,
                         filemode='a',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                        format='%(asctime)s %(name)s %(levelname)s %(message)s',
                         datefmt='%H:%M:%S',
                         level=logging.DEBUG)
     logger = logging.getLogger('ThemisMigration')
-    logger.info("TESTING LOGGER")
+    logger.info("Starting Themis migration ...")
+
+    themis_db = args.themisdb
+    # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
     con = connect_to_db(themis_db)
     cr = con.cursor()
     # user_vals = get_table_values(cr, "GEBRUIKER", user_value_mapping)
