@@ -1,6 +1,7 @@
 import os
 import sys
 import base64
+import logging
 import xmlrpc.client
 from striprtf.striprtf import rtf_to_text
 
@@ -15,6 +16,8 @@ language_mapping = {
     "E": "en_GB",
     "D": "de_DE",
 }
+
+logger = logging.getLogger('OdooHelper')
 
 
 def connect_to_odoo(url, database, username, secret):
@@ -48,7 +51,7 @@ def create_themis_users(url, database, username, secret, user_vals):
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, inactive_id_list = preprocess_user_values(user_vals)
     response = models.execute_kw(database, uid, secret, "res.users", "create_from_themis", [user_vals])
-    print(len(response))
+    logger.info(len(response))
     id_mapping = dict(zip(id_list, response))
     to_write_ids = []
     for inactive_id in inactive_id_list:
@@ -84,7 +87,7 @@ def create_themis_party_categories(url, database, username, secret, party_catego
     id_list = preprocess_party_category_values(party_category_vals)
     party_category_response = models.execute_kw(database, uid, secret, "cases.party_category", "create", [party_category_vals])
     if len(id_list) == len(party_category_response):
-        print(len(id_list))
+        logger.info(len(id_list))
         party_category_id_mapping = dict(zip(id_list, party_category_response))
     else:
         party_category_id_mapping = {}
@@ -119,7 +122,7 @@ def preprocess_company_values(company_vals, user_id_mapping, country_code_id_map
         if vals["language"] and vals["language"] in language_mapping:
             vals["language"] = language_mapping[vals["language"]]
         elif vals["language"]:
-            print("Language not found: " + str(vals["language"]))
+            logger.info("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         if "is_company" not in vals:
@@ -135,7 +138,7 @@ def create_themis_companies(url, database, username, secret, company_vals, user_
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, category_id_mapping, bank_vals = preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
-    print(len(response))
+    logger.info(len(response))
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
         vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
@@ -176,7 +179,7 @@ def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping,
         if vals["language"] and vals["language"] in language_mapping:
             vals["language"] = language_mapping[vals["language"]]
         elif vals["language"]:
-            print("Language not found: " + str(vals["language"]))
+            logger.info("Language not found: " + str(vals["language"]))
         themis_category_id = vals.pop("category_id")
         category_id_list.append(themis_category_id)
         vals["create_uid"] = vals["create_uid"] and user_id_mapping.get(vals["create_uid"], False)
@@ -190,7 +193,7 @@ def create_themis_contacts(url, database, username, secret, contact_vals, compan
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, category_id_mapping, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [contact_vals])
-    print(len(response))
+    logger.info(len(response))
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
         vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
@@ -210,7 +213,7 @@ def create_themis_case_categories(url, database, username, secret, case_category
     id_list = preprocess_case_category_values(case_category_vals)
     response = models.execute_kw(database, uid, secret, "cases.case_category", "create", [case_category_vals])
     if len(id_list) == len(response):
-        print(len(id_list))
+        logger.info(len(id_list))
         id_mapping = dict(zip(id_list, response))
         return id_mapping
     else:
@@ -246,7 +249,7 @@ def create_themis_cases(url, database, username, secret, case_vals, company_id_m
     id_list, active_mapping = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.case", "create_from_themis", [case_vals])
     if len(id_list) == len(response):
-        print(len(id_list))
+        logger.info(len(id_list))
         id_mapping = dict(zip(id_list, response))
         return id_mapping, active_mapping
     else:
@@ -270,7 +273,7 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
             text = rtf_to_text(desc_bytes.decode("cp1252")).replace("\n", "<br>\n")
             text = description_name + "<br>\n" + text + "<br>\n"
             if str(case_id) in write_dict:
-                print(case_id)
+                logger.info(case_id)
                 write_dict[str(case_id)]["description"] += text
             else:
                 write_dict[str(case_id)] = {"description": text}
@@ -312,7 +315,7 @@ def create_themis_parties(url, database, username, secret, party_vals, company_i
     models, uid = connect_to_odoo(url, database, username, secret)
     preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.party", "create", [party_vals])
-    print(len(response))
+    logger.info(len(response))
     return response
 
 
@@ -328,7 +331,7 @@ def create_themis_document_categories(url, database, username, secret, document_
     id_list = preprocess_document_category_values(document_category_vals)
     response = models.execute_kw(database, uid, secret, "cases.document_category", "create", [document_category_vals])
     if len(id_list) == len(response):
-        print(len(id_list))
+        logger.info(len(id_list))
         id_mapping = dict(zip(id_list, response))
         return id_mapping
     else:
@@ -344,7 +347,7 @@ def preprocess_document_values(vals, document_path, case_id_mapping, active_mapp
                 datas = base64.b64encode(data.read()).decode("utf-8")
                 # datas = base64.b64encode(data.read()).decode("utf-8", errors="replace").replace("\x00", "\uFFFD")
         except FileNotFoundError:
-            # print("File at " + str(filepath) + " not found.")
+            # logger.info("File at " + str(filepath) + " not found.")
             return False
         else:
             vals["datas"] = datas
@@ -366,21 +369,22 @@ def create_documents(models, database, uid, secret, vals_list):
             response = models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [vals_list])
         except Exception as e:
             if len(vals_list) == 1:
-                print("Error occured when migrating document: \n", e)
-                print("Document name: " + str(vals_list[0].get("filename", "")))
-                print("Odoo case id: " + str(vals_list[0].get("case_id", "")))
+                logger.info("Error occured when migrating document: \n", e)
+                logger.info("Document name: " + str(vals_list[0].get("filename", "")))
+                logger.info("Odoo case id: " + str(vals_list[0].get("case_id", "")))
             else:
-                print("Error occured when migrating documents: \n", e)
-                print("Splitting documents into 2 ...")
+                logger.info("Error occured when migrating documents: \n", e)
+                logger.info("Splitting documents into 2 ...")
                 lst1 = vals_list[:len(vals_list) // 2]
                 create_documents(models, database, uid, secret, lst1)
                 lst2 = vals_list[len(vals_list) // 2:]
                 create_documents(models, database, uid, secret, lst2)
         else:
-            print(len(response))
+            logger.info("Created " + str(len(response)) + " documents.")
 
 
 def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
+    logger.info("Creating Themis documents ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
@@ -398,4 +402,4 @@ def create_themis_documents(url, database, username, secret, document_vals, docu
                 temp_size = data_size
     if temp_vals:
         response = models.execute_kw(database, uid, secret, "cases.document", "create_from_themis", [temp_vals])
-        print(len(response))
+        logger.info("Created " + str(len(response)) + " documents.")
