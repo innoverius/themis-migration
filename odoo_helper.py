@@ -48,10 +48,11 @@ def preprocess_user_values(user_vals):
 
 
 def create_themis_users(url, database, username, secret, user_vals):
+    logger.info("Migrating Themis users ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, inactive_id_list = preprocess_user_values(user_vals)
     response = models.execute_kw(database, uid, secret, "res.users", "create_from_themis", [user_vals])
-    logger.info(len(response))
+    logger.info("Created "+ str(len(response)) + " users.")
     id_mapping = dict(zip(id_list, response))
     to_write_ids = []
     for inactive_id in inactive_id_list:
@@ -83,11 +84,12 @@ def preprocess_party_category_values(party_category_vals):
 
 
 def create_themis_party_categories(url, database, username, secret, party_category_vals):
+    logger.info("Migrating Themis party categories ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list = preprocess_party_category_values(party_category_vals)
     party_category_response = models.execute_kw(database, uid, secret, "cases.party_category", "create", [party_category_vals])
     if len(id_list) == len(party_category_response):
-        logger.info(len(id_list))
+        logger.info("Created " + str(len(id_list)) + " party categories.")
         party_category_id_mapping = dict(zip(id_list, party_category_response))
     else:
         party_category_id_mapping = {}
@@ -135,10 +137,11 @@ def preprocess_company_values(company_vals, user_id_mapping, country_code_id_map
 
 
 def create_themis_companies(url, database, username, secret, company_vals, user_id_mapping, country_code_id_mapping):
+    logger.info("Migrating Themis companies ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, category_id_mapping, bank_vals = preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [company_vals])
-    logger.info(len(response))
+    logger.info("Created " + str(len(response)) + " companies.")
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
         vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
@@ -190,10 +193,11 @@ def preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping,
 
 
 def create_themis_contacts(url, database, username, secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping):
+    logger.info("Migrating Themis contacts ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, category_id_mapping, bank_vals = preprocess_contact_values(contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
     response = models.execute_kw(database, uid, secret, "res.partner", "create_from_themis", [contact_vals])
-    logger.info(len(response))
+    logger.info("Created " + str(len(response)) + " contacts.")
     id_mapping = dict(zip(id_list, response))
     for vals in bank_vals:
         vals["partner_id"] = id_mapping.get(vals["partner_id"], False)
@@ -209,11 +213,12 @@ def preprocess_case_category_values(case_category_vals):
 
 
 def create_themis_case_categories(url, database, username, secret, case_category_vals):
+    logger.info("Migrating Themis case categories ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list = preprocess_case_category_values(case_category_vals)
     response = models.execute_kw(database, uid, secret, "cases.case_category", "create", [case_category_vals])
     if len(id_list) == len(response):
-        logger.info(len(id_list))
+        logger.info("Created " + str(len(id_list)) + " case categories.")
         id_mapping = dict(zip(id_list, response))
         return id_mapping
     else:
@@ -245,11 +250,12 @@ def preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, us
 
 
 def create_themis_cases(url, database, username, secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping):
+    logger.info("Migrating Themis cases ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, active_mapping = preprocess_case_values(case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.case", "create_from_themis", [case_vals])
     if len(id_list) == len(response):
-        logger.info(len(id_list))
+        logger.info("Created " + str(len(id_list)) + " cases.")
         id_mapping = dict(zip(id_list, response))
         return id_mapping, active_mapping
     else:
@@ -281,9 +287,11 @@ def preprocess_case_description_vals(case_description_vals, case_description_typ
 
 
 def write_case_descriptions(url, database, username, secret, case_description_vals, case_description_type_vals, case_id_mapping):
+    logger.info("Migrating Themis case descriptions ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     write_dict = preprocess_case_description_vals(case_description_vals, case_description_type_vals, case_id_mapping)
     models.execute_kw(database, uid, secret, "cases.case", "write_from_themis", [write_dict])
+    logger.info("Themis case descriptions migrated.")
 
 
 def preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping):
@@ -312,10 +320,11 @@ def preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, 
 
 
 def create_themis_parties(url, database, username, secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping):
+    logger.info("Migrating Themis parties ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.party", "create", [party_vals])
-    logger.info(len(response))
+    logger.info("Created " + str(len(response)) + " parties.")
     return response
 
 
@@ -327,11 +336,12 @@ def preprocess_document_category_values(document_category_vals):
 
 
 def create_themis_document_categories(url, database, username, secret, document_category_vals):
+    logger.info("Migrating Themis document categories ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list = preprocess_document_category_values(document_category_vals)
     response = models.execute_kw(database, uid, secret, "cases.document_category", "create", [document_category_vals])
     if len(id_list) == len(response):
-        logger.info(len(id_list))
+        logger.info("Created " + str(len(id_list)) + " document categories.")
         id_mapping = dict(zip(id_list, response))
         return id_mapping
     else:
@@ -384,7 +394,7 @@ def create_documents(models, database, uid, secret, vals_list):
 
 
 def create_themis_documents(url, database, username, secret, document_vals, document_path, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping):
-    logger.info("Creating Themis documents ...")
+    logger.info("Migrating Themis documents ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     temp_vals = []
     temp_size = 0
