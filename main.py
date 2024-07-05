@@ -62,6 +62,7 @@ user_value_mapping = {
     "NAAM": "name",
     "TEL_MOBIEL": "mobile",
     "EMAILADRES": "email",
+    "UURTARIEF": "tariff",
     "ACTIEF": "active",
 }
 
@@ -131,7 +132,7 @@ contact_value_mapping = {
     "CREATEDBY_ID": "create_uid",
     "MODIFIED": "write_date",
 }
-
+# TODO migrate document type?
 case_category_value_mapping = {
     "ID": "id",
     "NEDERLANDS": "name",
@@ -149,6 +150,7 @@ case_value_mapping = {
     "REGISTREERDER_ID": "create_uid",
     "OPENINGSDATUM": "create_date",
     "MODIFIED": "write_date",
+    "UURTARIEF": "tariff",
 }
 
 party_value_mapping = {
@@ -156,6 +158,54 @@ party_value_mapping = {
     "ADRESBOEK_ID": "contact_id",
     "DOSSIERADRESCATEGORIE_ID": "category_id",
     "BEDRIJF_ID": "company_id",
+}
+
+timesheet_type_value_mapping = {
+    "ID": "id",
+    "OMSCHRIJVING": "name",
+    "UURTARIEF": "list_price",
+}
+
+case_timesheet_value_mapping = {
+    "DOSSIER_ID": "case_id",
+    "GEBRUIKER_ID": "user_id",
+    "UURTARIEF": "price_unit",
+}
+
+timesheet_value_mapping = {
+    "OMSCHRIJVING": "name",
+    "TIJDTYPE_ID": "type_id",
+    "DOSSIER_ID": "case_id",
+    "REGISTREERDER_ID": "user_id",
+    "MINUTEN": "minutes",  # TODO GEPRESTEERD of MINUTEN?
+    "UURTARIEF": "price_unit",
+    "DATUM": "date",
+    "AANREKENEN": "billable",
+    "GEFACTUREERD": "billed",
+}
+
+cost_type_value_mapping = {
+    "ID": "id",
+    "N": "name",
+    "EENHEIDSBEDRAG": "list_price",
+}
+
+case_cost_value_mapping = {
+    "DOSSIER_ID": "case_id",
+    "KOSTTYPE_ID": "type_id",
+    "EENHEIDSBEDRAG": "price_unit",
+}
+
+cost_value_mapping = {
+    "OMSCHRIJVING": "name",
+    "KOSTTYPE_ID": "type_id",
+    "DOSSIER_ID": "case_id",
+    "DATUM": "date",
+    "AANTAL": "amount",
+    "BEDRAG": "price",
+    "KOSTEENHEIDSBEDRAG": "price_unit",
+    "AANREKENEN": "billable",
+    "GEFACTUREERD": "billed",
 }
 
 document_category_value_mapping = {
@@ -233,29 +283,46 @@ if __name__ == '__main__':
     # themis_db = "/Library/Frameworks/Firebird.framework/Versions/A/Resources/examples/empbuild/themis5.fdb"
     con = connect_to_db(themis_db)
     cr = con.cursor()
+
     user_vals = get_table_values(cr, "GEBRUIKER", user_value_mapping)
-    user_id_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
+    user_id_mapping, user_tariff_mapping = create_themis_users(args.url, args.odoodb, args.user, args.secret, user_vals)
     country_code_id_mapping = get_country_code_id_mapping(args.url, args.odoodb, args.user, args.secret)
     company_vals = get_table_values(cr, "BEDRIJF", company_value_mapping)
     company_id_mapping, themis_company_category_id_mapping = create_themis_companies(args.url, args.odoodb, args.user, args.secret, company_vals, user_id_mapping, country_code_id_mapping)
     contact_vals = get_table_values(cr, "ADRESBOEK", contact_value_mapping)
     contact_id_mapping, themis_contact_category_id_mapping = create_themis_contacts(args.url, args.odoodb, args.user, args.secret, contact_vals, company_id_mapping, user_id_mapping, country_code_id_mapping)
+
     case_category_vals = get_table_values(cr, "DOSSIERCATEGORIE", case_category_value_mapping)
     case_category_id_mapping = create_themis_case_categories(args.url, args.odoodb, args.user, args.secret, case_category_vals)
     case_vals = get_table_values(cr, "DOSSIER", case_value_mapping)
-    case_id_mapping, active_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
+    case_id_mapping, active_mapping, case_tariff_mapping = create_themis_cases(args.url, args.odoodb, args.user, args.secret, case_vals, company_id_mapping, contact_id_mapping, user_id_mapping, case_category_id_mapping)
     case_description_type_vals = get_table_values(cr, "OPMERKINGTYPE", case_description_type_value_mapping)
     case_description_vals = get_table_values(cr, "DOSSIEROPMERKING", case_description_value_mapping)
     write_case_descriptions(args.url, args.odoodb, args.user, args.secret, case_description_vals, case_description_type_vals, case_id_mapping)
+
     party_category_vals = get_table_values(cr, "ADRESCATEGORIE", party_category_value_mapping)
     party_category_id_mapping = create_themis_party_categories(args.url, args.odoodb, args.user, args.secret, party_category_vals)
     party_vals = get_table_values(cr, "DOSSIERADRESBOEK", party_value_mapping)
     create_themis_parties(args.url, args.odoodb, args.user, args.secret, party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
+
+    timesheet_type_vals = get_table_values(cr, "TIJDTYPE", timesheet_type_value_mapping)
+    timesheet_type_id_mapping, timesheet_type_price_mapping = create_themis_timesheet_types(args.url, args.odoodb, args.user, args.secret, timesheet_type_vals)
+
+    cost_type_vals = get_table_values(cr, "KOSTTYPE", cost_type_value_mapping)
+    cost_type_id_mapping, cost_type_price_mapping = create_themis_cost_types(args.url, args.odoodb, args.user, args.secret, cost_type_vals)
+
+    timesheet_vals = get_table_values(cr, "DOSSIERTIJD", timesheet_value_mapping)
+    case_timesheet_vals = get_table_values(cr, "DOSSIERTIJDTARIEF", case_timesheet_value_mapping)
+    cost_vals = get_table_values(cr, "DOSSIERKOST", cost_value_mapping)
+    case_cost_vals = get_table_values(cr, "DOSSIERKOSTTARIEF", case_cost_value_mapping)
+    create_themis_timesheets_costs(args.url, args.odoodb, args.user, args.secret, timesheet_vals, cost_vals, user_id_mapping, user_tariff_mapping, case_id_mapping, case_tariff_mapping, timesheet_type_id_mapping, timesheet_type_price_mapping, cost_type_id_mapping, cost_type_price_mapping, case_timesheet_vals, case_cost_vals)
+
     document_category_vals = get_table_values(cr, "DOSSIERDOCUMENTMAP", document_category_value_mapping)
     document_category_id_mapping = create_themis_document_categories(args.url, args.odoodb, args.user, args.secret, document_category_vals)
     document_vals = get_table_values(cr, "DOSSIERDOCUMENT", document_value_mapping)
     document_vals = list(filter(lambda x: x["case_id"], document_vals))
     create_themis_documents(args.url, args.odoodb, args.user, args.secret, document_vals, args.documentpath, case_id_mapping, active_mapping, user_id_mapping, document_category_id_mapping)
+
     cr.close()
     con.close()
 
