@@ -340,6 +340,8 @@ def preprocess_timesheet_type_values(timesheet_type_vals):
     for vals in timesheet_type_vals:
         type_id = vals.pop("id")
         id_list.append(type_id)
+        vals["detailed_type"] = vals.get("detailed_type", False) or "service"
+        vals["service_policy"] = vals.get("service_policy", False) or "delivered_timesheet"
         timesheet_type_price_mapping[type_id] = vals["list_price"]
     return id_list, timesheet_type_price_mapping
 
@@ -348,7 +350,7 @@ def create_themis_timesheet_types(url, database, username, secret, timesheet_typ
     logger.info("Migrating Themis timesheet types ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, timesheet_type_price_mapping = preprocess_timesheet_type_values(timesheet_type_vals)
-    response = models.execute_kw(database, uid, secret, "product.template", "create_timesheets_from_themis", [timesheet_type_vals])
+    response = models.execute_kw(database, uid, secret, "product.template", "create", [timesheet_type_vals])
     if len(id_list) == len(response):
         logger.info("Created " + str(len(id_list)) + " timesheet types.")
         id_mapping = dict(zip(id_list, response))
@@ -402,6 +404,8 @@ def preprocess_cost_type_values(cost_type_vals):
     for vals in cost_type_vals:
         type_id = vals.pop("id")
         id_list.append(type_id)
+        vals["detailed_type"] = vals.get("detailed_type", False) or "service"
+        vals["service_policy"] = vals.get("service_policy", False) or "ordered_prepaid"
         cost_type_price_mapping[type_id] = vals["list_price"]
     return id_list, cost_type_price_mapping
 
@@ -410,7 +414,7 @@ def create_themis_cost_types(url, database, username, secret, cost_type_vals):
     logger.info("Migrating Themis cost types ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, cost_type_price_mapping = preprocess_cost_type_values(cost_type_vals)
-    response = models.execute_kw(database, uid, secret, "product.template", "create_costs_from_themis", [cost_type_vals])
+    response = models.execute_kw(database, uid, secret, "product.template", "create", [cost_type_vals])
     if len(id_list) == len(response):
         logger.info("Created " + str(len(id_list)) + " cost types.")
         id_mapping = dict(zip(id_list, response))
