@@ -380,13 +380,13 @@ def preprocess_timesheet_values(timesheet_vals, user_id_mapping, user_tariff_map
         vals["unit_amount"] = minutes / 60
         price_unit = vals["price_unit"]
         if not price_unit and price_unit != 0:
-            case_user_tariff = case_timesheet_mapping.get((themis_case_id, themis_user_id), False)
+            case_user_tariff = case_timesheet_mapping.get((themis_case_id, themis_user_id), None)
             if not case_user_tariff and case_user_tariff != 0:
-                user_tariff = user_tariff_mapping.get(themis_user_id, False)
+                user_tariff = user_tariff_mapping.get(themis_user_id, None)
                 if not user_tariff and user_tariff != 0:
-                    case_tariff = case_tariff_mapping.get(themis_case_id, False)
+                    case_tariff = case_tariff_mapping.get(themis_case_id, None)
                     if not case_tariff and case_tariff != 0:
-                        vals["price_unit"] = timesheet_type_price_mapping.get(themis_type_id, False) or 0
+                        vals["price_unit"] = timesheet_type_price_mapping.get(themis_type_id, None) or 0
                     else:
                         vals["price_unit"] = case_tariff
                 else:
@@ -445,9 +445,9 @@ def preprocess_cost_values(cost_vals, case_id_mapping, cost_type_id_mapping, cos
             if not price and price != 0:
                 price_unit = vals["price_unit"]
                 if not price_unit and price_unit != 0:
-                    case_cost = case_cost_mapping.get((themis_case_id, themis_type_id), False)
+                    case_cost = case_cost_mapping.get((themis_case_id, themis_type_id), None)
                     if not case_cost and case_cost != 0:
-                        vals["price_unit"] = cost_type_price_mapping.get(themis_type_id, False) or 0
+                        vals["price_unit"] = cost_type_price_mapping.get(themis_type_id, None) or 0
                     else:
                         vals["price_unit"] = case_cost
                 else:
