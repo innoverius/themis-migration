@@ -350,7 +350,7 @@ def create_themis_timesheet_types(url, database, username, secret, timesheet_typ
     logger.info("Migrating Themis timesheet types ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, timesheet_type_price_mapping = preprocess_timesheet_type_values(timesheet_type_vals)
-    response = models.execute_kw(database, uid, secret, "product.template", "create", [timesheet_type_vals])
+    response = models.execute_kw(database, uid, secret, "product.template", "create_timesheets_from_themis", [timesheet_type_vals])
     if len(id_list) == len(response):
         logger.info("Created " + str(len(id_list)) + " timesheet types.")
         id_mapping = dict(zip(id_list, response))
@@ -438,10 +438,10 @@ def preprocess_cost_values(cost_vals, case_id_mapping, cost_type_id_mapping, cos
         vals["type_id"] = cost_type_id_mapping.get(themis_type_id, False)
         themis_case_id = vals["case_id"]
         vals["case_id"] = case_id_mapping.get(themis_case_id, False)
-        vals["date"] = vals["date"] and vals["date"].strftime(odoo_date_format)
+        # vals["date"] = vals["date"] and vals["date"].strftime(odoo_date_format)
         amount = vals["amount"]
         if amount:
-            price = vals["price"]
+            price = vals.pop("price")
             if not price and price != 0:
                 price_unit = vals["price_unit"]
                 if not price_unit and price_unit != 0:

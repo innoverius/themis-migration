@@ -200,7 +200,7 @@ cost_value_mapping = {
     "OMSCHRIJVING": "name",
     "KOSTTYPE_ID": "type_id",
     "DOSSIER_ID": "case_id",
-    "DATUM": "date",
+    # "DATUM": "date",
     "AANTAL": "amount",
     "BEDRAG": "price",
     "KOSTEENHEIDSBEDRAG": "price_unit",
