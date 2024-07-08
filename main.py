@@ -315,6 +315,8 @@ if __name__ == '__main__':
     case_timesheet_vals = get_table_values(cr, "DOSSIERTIJDTARIEF", case_timesheet_value_mapping)
     cost_vals = get_table_values(cr, "DOSSIERKOST", cost_value_mapping)
     case_cost_vals = get_table_values(cr, "DOSSIERKOSTTARIEF", case_cost_value_mapping)
+    timesheet_vals = filter(lambda x: x["billed"] != "T", timesheet_vals)
+    cost_vals = filter(lambda x: x["billed"] != "T", cost_vals)
     create_themis_timesheets_costs(args.url, args.odoodb, args.user, args.secret, timesheet_vals, cost_vals, user_id_mapping, user_tariff_mapping, case_id_mapping, case_tariff_mapping, timesheet_type_id_mapping, timesheet_type_price_mapping, cost_type_id_mapping, cost_type_price_mapping, case_timesheet_vals, case_cost_vals)
 
     document_category_vals = get_table_values(cr, "DOSSIERDOCUMENTMAP", document_category_value_mapping)
