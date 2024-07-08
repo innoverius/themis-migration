@@ -350,7 +350,7 @@ def create_themis_timesheet_types(url, database, username, secret, timesheet_typ
     logger.info("Migrating Themis timesheet types ...")
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, timesheet_type_price_mapping = preprocess_timesheet_type_values(timesheet_type_vals)
-    response = models.execute_kw(database, uid, secret, "product.template", "create_timesheets_from_themis", [timesheet_type_vals])
+    response = models.execute_kw(database, uid, secret, "product.template", "create_timesheet_types_from_themis", [timesheet_type_vals])
     if len(id_list) == len(response):
         logger.info("Created " + str(len(id_list)) + " timesheet types.")
         id_mapping = dict(zip(id_list, response))
