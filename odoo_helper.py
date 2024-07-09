@@ -55,7 +55,7 @@ def create_themis_users(url, database, username, secret, user_vals):
     models, uid = connect_to_odoo(url, database, username, secret)
     id_list, inactive_id_list, user_tariff_mapping = preprocess_user_values(user_vals)
     response = models.execute_kw(database, uid, secret, "res.users", "create_from_themis", [user_vals])
-    logger.info("Created "+ str(len(response)) + " users.")
+    logger.info("Created " + str(len(response)) + " users.")
     id_mapping = dict(zip(id_list, response))
     to_write_ids = []
     for inactive_id in inactive_id_list:
