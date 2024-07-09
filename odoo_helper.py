@@ -330,6 +330,7 @@ def create_themis_parties(url, database, username, secret, party_vals, company_i
     models, uid = connect_to_odoo(url, database, username, secret)
     preprocess_party_values(party_vals, company_id_mapping, contact_id_mapping, case_id_mapping, themis_company_category_id_mapping, themis_contact_category_id_mapping, party_category_id_mapping)
     response = models.execute_kw(database, uid, secret, "cases.party", "create", [party_vals])
+    models.execute_kw(database, uid, secret, "cases.case", "guess_case_clients", [])
     logger.info("Created " + str(len(response)) + " parties.")
     return response
 
