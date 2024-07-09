@@ -132,7 +132,7 @@ contact_value_mapping = {
     "CREATEDBY_ID": "create_uid",
     "MODIFIED": "write_date",
 }
-# TODO migrate document type?
+# TODO migrate dossier type?
 case_category_value_mapping = {
     "ID": "id",
     "NEDERLANDS": "name",
