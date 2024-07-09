@@ -465,8 +465,8 @@ def create_themis_timesheets_costs(url, database, username, secret, timesheet_va
     preprocess_timesheet_values(timesheet_vals, user_id_mapping, user_tariff_mapping, case_id_mapping, case_tariff_mapping, timesheet_type_id_mapping, timesheet_type_price_mapping, case_timesheet_vals)
     preprocess_cost_values(cost_vals, case_id_mapping, cost_type_id_mapping, cost_type_price_mapping, case_cost_vals)
     response = models.execute_kw(database, uid, secret, "cases.case", "create_timesheets_costs_from_themis", [timesheet_vals, cost_vals])
-    logger.info("Created " + str(len(response[0])) + " timesheets.")
-    logger.info("Created " + str(len(response[1])) + " costs.")
+    logger.info("Created " + str(response[0]) + " timesheets.")
+    logger.info("Created " + str(response[1]) + " costs.")
     return response
 
 
