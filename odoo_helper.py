@@ -99,11 +99,23 @@ def create_themis_party_categories(url, database, username, secret, party_catego
     return party_category_id_mapping
 
 
+# Needed to fix strftime bug for dates where year < 1000
+def correct_year_format(date_string):
+    if not date_string:
+        return date_string
+    year_string = date_string.partition("-")[0]
+    nb = 4 - len(year_string)
+    if nb > 0:
+        return "0" * nb + date_string
+    else:
+        return date_string
+
+
 def preprocess_create_write_dates(vals):
     # vals["create_date"] = vals["create_date"] or vals["write_date"]
     # vals["write_date"] = vals["write_date"] or vals["create_date"]
-    vals["create_date"] = vals["create_date"] and vals["create_date"].strftime(odoo_datetime_format)
-    vals["write_date"] = vals["write_date"] and vals["write_date"].strftime(odoo_datetime_format)
+    vals["create_date"] = vals["create_date"] and correct_year_format(vals["create_date"].strftime(odoo_datetime_format))
+    vals["write_date"] = vals["write_date"] and correct_year_format(vals["write_date"].strftime(odoo_datetime_format))
 
 
 def preprocess_company_values(company_vals, user_id_mapping, country_code_id_mapping):
@@ -394,7 +406,7 @@ def preprocess_timesheet_values(timesheet_vals, user_id_mapping, user_tariff_map
                     vals["price_unit"] = user_tariff
             else:
                 vals["price_unit"] = case_user_tariff
-        vals["date"] = vals["date"] and vals["date"].strftime(odoo_date_format)
+        vals["date"] = vals["date"] and correct_year_format(vals["date"].strftime(odoo_date_format))
         vals["billable"] = vals["billable"] == "T"
         vals["billed"] = vals["billed"] == "T"
 
@@ -439,7 +451,7 @@ def preprocess_cost_values(cost_vals, case_id_mapping, cost_type_id_mapping, cos
         vals["type_id"] = cost_type_id_mapping.get(themis_type_id, False)
         themis_case_id = vals["case_id"]
         vals["case_id"] = case_id_mapping.get(themis_case_id, False)
-        # vals["date"] = vals["date"] and vals["date"].strftime(odoo_date_format)
+        # vals["date"] = vals["date"] and correct_year_format(vals["date"].strftime(odoo_date_format))
         amount = vals["amount"]
         if amount:
             price = vals.pop("price")
